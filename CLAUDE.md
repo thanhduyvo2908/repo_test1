@@ -150,9 +150,9 @@ Quy tắc:
 ## Gói nội dung và asset
 
 - `packs/placeholder/` là gói mặc định và được commit. Nhân vật là hình khối trung tính với tên chung. Game và toàn bộ test phải chạy được chỉ với gói này.
-- `packs/onepiece/` chứa dữ liệu World 1. Sprite đến từ nhân vật MUGEN do cộng đồng làm. Không commit sprite và file MUGEN gốc vào git; giữ chúng trong `.gitignore`.
+- `packs/onepiece/` chứa dữ liệu World 1. Sprite ưu tiên lấy từ nhân vật MUGEN do cộng đồng làm. Nhân vật không có bản MUGEN dùng được thì lấy sprite sheet rip từ game One Piece trên GBA (spritedatabase.net), rồi chỉnh tỉ lệ và bảng màu cho khớp. Nguồn từng nhân vật ghi ở `docs/characters/sprite-sources.md`. Không commit sprite và file MUGEN gốc vào git; giữ chúng trong `.gitignore`.
 - Người dùng tự tải sprite về. Claude tìm và đưa link, tác giả, điều kiện dùng lại, nhưng không tự tải file.
-- Nguồn thô đặt ở `assets-raw/<nhân-vật>/`, mỗi thư mục gồm `.def`, `.sff`, `.air`, `.cmd`, `.cns` và readme của tác giả. Script trong `tools/` chuyển chúng thành atlas PNG, JSON animation và bản nháp moveset.
+- Nguồn thô đặt ở `assets-raw/<nhân-vật>/`. Nhân vật MUGEN gồm `.def`, `.sff`, `.air`, `.cmd`, `.cns` và readme của tác giả; nhân vật GBA là một file sheet `.gif` hoặc `.png`. Script trong `tools/` chuyển chúng thành atlas PNG, JSON animation và bản nháp moveset.
 - Mỗi nhân vật nhập vào có một dòng trong `CREDITS.md`: tác giả, nguồn và điều kiện dùng lại ghi trong readme.
 - Nếu các bộ sprite lệch nhau về kích thước hoặc nét vẽ, Claude được chỉnh lại sprite có sẵn: đổi tỉ lệ, căn chỉnh, đổi bảng màu.
 - Không tạo mới hoặc vẽ lại hình nhân vật có bản quyền. Thiếu sprite thì dùng placeholder và báo cho người dùng.
@@ -164,7 +164,7 @@ Repo khởi tạo ngày 11/11/2026, dùng Node 26, TypeScript 7, Vite 8, React 1
 - `npm run dev`: chạy bản phát triển. `.claude/launch.json` có cấu hình `dev` ở cổng 5173 để mở trong trình duyệt của app.
 - `npm test`: chạy Vitest
 - `npm run typecheck`
-- `npm run sim`: mô phỏng hàng loạt trận để kiểm tra cân bằng. Hiện mới nạp gói và in tóm tắt; phần mô phỏng thuộc bước 2 của lộ trình.
+- `npm run sim`: mô phỏng hàng loạt trận để kiểm tra cân bằng. Cho nhân vật khởi đầu đánh một mình mọi màn và boss của mọi map, in tỉ lệ thắng, số vòng và HP còn lại theo từng level. Tùy chọn: `-- --runs 500`, `-- --levels 1,3,5`.
 - `npm run build`
 
 Node và Git được cài bằng winget sau khi app đã chạy, nên shell của app có thể chưa có chúng trong PATH. Nếu `node` hoặc `git` báo không tìm thấy, chạy dòng này trong cùng lệnh: `$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')`.
@@ -192,7 +192,9 @@ Dùng các giá trị này cho tới khi người dùng chốt khác:
 - Ánh sáng và Bóng tối đánh nhau thì cả hai chiều đều nhân 2. Hai hệ này không khắc và không bị khắc bởi năm hệ cơ bản.
 - Số trong công thức sát thương lấy theo Pokémon: chí mạng nhân 1,5 với tỉ lệ cơ bản 1/24, ngẫu nhiên từ 0,85 đến 1,00, STAB nhân 1,5, skill đánh nhiều mục tiêu nhân 0,75. Kết quả làm tròn xuống, tối thiểu 1.
 - Vì công thức lấy theo Pokémon, chỉ số nhân vật nên ở cùng thang với Pokémon: ở level 50, phần lớn chỉ số từ 50 đến 200.
-- Hồi chiêu giảm 1 vào cuối mỗi lượt của nhân vật, kể cả lượt bị mất do khống chế. Skill được dùng trong phần mở đầu bắt đầu hồi chiêu ngay sau khi dùng.
+- Hồi chiêu giảm 1 vào cuối mỗi lượt của nhân vật, kể cả lượt bị mất do khống chế. Skill được dùng trong phần mở đầu bắt đầu hồi chiêu ngay sau khi dùng. Hồi chiêu N nghĩa là skill nghỉ đúng N lượt kế tiếp của nhân vật đó: hồi 2 thì dùng ở lượt 1, nghỉ lượt 2 và 3, dùng lại được ở lượt 4.
+- Ở màn nhỏ, nhân vật gục thì người kế tiếp vào sân ngay. Người mới vào có thể bị đánh trong vòng đó, nhưng chỉ bắt đầu hành động từ vòng sau.
+- Skill có Power 0 không gây sát thương; tác dụng của nó đến từ hiệu ứng trạng thái.
 - Hai nhân vật cùng tốc độ thì chọn người đánh trước bằng bộ sinh số có seed.
 - Boss có bộ chỉ số riêng khai báo trong dữ liệu map, dưới dạng base stat của bản boss, rồi tính theo cùng công thức chỉ số ở level của boss. Bản chiêu mộ dùng base stat của nhân vật.
 - Chỉ số làm tròn xuống sau khi cộng hết các phần.
@@ -207,6 +209,9 @@ Dùng các giá trị này cho tới khi người dùng chốt khác:
 - Màn nhỏ giới hạn 100 vòng; quá giới hạn thì tính là thua.
 - Skill placeholder: đòn đánh thường Power 40; S1 Power 60, hồi 2 vòng; S2 Power 80, hồi 3 vòng; S3 Power 120; S4 Power 150.
 - Hoàn thành một World nghĩa là hạ boss của map cuối lần đầu.
+- Mở khóa: map đầu tiên mở sẵn. Các màn nhỏ mở lần lượt. Boss mở khi qua hết màn nhỏ của map. Hạ boss lần đầu mở map kế tiếp, kể cả map đầu của World sau.
+- Nhân vật chiêu mộ được gia nhập ở level của boss, không vượt giới hạn level của World đó.
+- Seed của mỗi trận lấy từ seed của file lưu trộn với bộ đếm số trận. Seed của file lưu do giao diện tạo khi bắt đầu game mới. Kết quả trận được ghi vào file lưu ngay khi mô phỏng xong; phần phát lại chỉ để xem.
 - Mỗi lần hạ boss có 50% rơi item. Bậc rơi theo tỉ lệ 60% Thường, 28% Hiếm, 10% Sử thi, 2% Huyền thoại.
 - Mỗi level cho 3 điểm tự nâng. Mỗi chỉ số nhận tối đa số điểm bằng level của nhân vật. Đặt lại tự do.
 - Trận boss và ải phụ giới hạn 30 vòng. Ải phụ có 3 lượt mỗi ngày. Thưởng offline tích tối đa 8 giờ.

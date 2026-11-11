@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "sim": "tsx tools/sim.ts",
-    "mugen:preview": "tsx tools/mugen-preview.ts"
+    "mugen:preview": "tsx tools/mugen-preview.ts",
+    "sheet:preview": "tsx tools/sheet-preview.ts"
   },
   "dependencies": {
     "react": "^19.3.1",

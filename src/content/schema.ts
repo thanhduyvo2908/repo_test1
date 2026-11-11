@@ -44,7 +44,8 @@ export const skillSchema = z.object({
   description: localizedTextSchema,
   /** Defaults to the owner's element. */
   element: elementSchema.optional(),
-  power: positive,
+  /** 0 for skills that deal no damage (shields, buffs). */
+  power: z.number().min(0),
   /** The stats the skill's damage scales with; A in the damage formula is the weighted sum. */
   scaling: z.array(z.object({ stat: statKeySchema, weight: positive })).min(1),
   target: z.enum(SKILL_TARGETS),

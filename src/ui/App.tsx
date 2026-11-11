@@ -1,22 +1,31 @@
-import type { Pack } from "../content/loader";
+import { useState } from "react";
 import { LANGUAGES, isLang } from "../i18n";
-import { useI18n } from "./i18n";
+import { BattleScreen, type BattleTarget } from "./screens/BattleScreen";
+import { MapInfoScreen } from "./screens/MapInfoScreen";
+import { MapListScreen } from "./screens/MapListScreen";
+import { TeamScreen } from "./screens/TeamScreen";
+import { useStore } from "./store";
 
-export function App({ pack }: { pack: Pack }) {
-  const { t, l, lang, setLang } = useI18n();
-  const starter = pack.characters.get(pack.manifest.starterCharacterId);
+type Screen =
+  | { name: "maps" }
+  | { name: "map"; mapId: string }
+  | { name: "battle"; target: BattleTarget }
+  | { name: "team" };
+
+export function App() {
+  const { t, lang, setLang } = useStore();
+  const [screen, setScreen] = useState<Screen>({ name: "maps" });
+  const tab = screen.name === "team" ? "team" : "maps";
 
   return (
-    <main className="app">
+    <div className="app" lang={lang}>
       <header className="app-header">
-        <div>
-          <h1>{t("app.title")}</h1>
-          <p className="muted">{t("app.tagline")}</p>
-        </div>
+        <h1>{t("app.title")}</h1>
         <label className="lang-picker">
-          <span>{t("settings.language")}</span>
+          <span className="visually-hidden">{t("settings.language")}</span>
           <select
             value={lang}
+            aria-label={t("settings.language")}
             onChange={(event) => {
               if (isLang(event.target.value)) setLang(event.target.value);
             }}
@@ -30,45 +39,48 @@ export function App({ pack }: { pack: Pack }) {
         </label>
       </header>
 
-      {starter && (
-        <p className="starter">
-          {t("home.starter", { name: l(starter.name) })}{" "}
-          <span className={`element element-${starter.element}`}>
-            {t(`element.${starter.element}`)}
-          </span>
-        </p>
-      )}
+      <nav className="tabs">
+        <button
+          type="button"
+          className={tab === "maps" ? "tab active" : "tab"}
+          onClick={() => setScreen({ name: "maps" })}
+        >
+          {t("nav.maps")}
+        </button>
+        <button
+          type="button"
+          className={tab === "team" ? "tab active" : "tab"}
+          onClick={() => setScreen({ name: "team" })}
+        >
+          {t("nav.team")}
+        </button>
+      </nav>
 
-      {pack.worlds.map((world) => (
-        <section key={world.id} className="world">
-          <h2>{l(world.name)}</h2>
-          <h3 className="muted">{t("home.maps")}</h3>
-          <ul className="map-list">
-            {world.maps.map((map) => {
-              const boss = pack.characters.get(map.boss.characterId);
-              const recruitRate =
-                map.boss.recruitRate ?? pack.balance.worlds[world.id]?.recruitRate ?? 0;
-              return (
-                <li key={map.id} className="map-card">
-                  <strong>{l(map.name)}</strong>
-                  <span>{t("map.stageCount", { count: map.stages.length })}</span>
-                  {boss && (
-                    <span>
-                      {t("map.boss", { name: l(boss.name), level: map.boss.level })}{" "}
-                      <span className={`element element-${boss.element}`}>
-                        {t(`element.${boss.element}`)}
-                      </span>
-                    </span>
-                  )}
-                  <span className="muted">
-                    {t("map.recruitRate", { percent: Math.round(recruitRate * 100) })}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      ))}
-    </main>
+      <main>
+        {screen.name === "maps" && (
+          <MapListScreen onOpenMap={(mapId) => setScreen({ name: "map", mapId })} />
+        )}
+        {screen.name === "map" && (
+          <MapInfoScreen
+            mapId={screen.mapId}
+            onBack={() => setScreen({ name: "maps" })}
+            onFightStage={(stageIndex) =>
+              setScreen({ name: "battle", target: { mapId: screen.mapId, kind: "stage", stageIndex } })
+            }
+            onFightBoss={() =>
+              setScreen({ name: "battle", target: { mapId: screen.mapId, kind: "boss" } })
+            }
+          />
+        )}
+        {screen.name === "battle" && (
+          <BattleScreen
+            key={JSON.stringify(screen.target)}
+            target={screen.target}
+            onBack={() => setScreen({ name: "map", mapId: screen.target.mapId })}
+          />
+        )}
+        {screen.name === "team" && <TeamScreen />}
+      </main>
+    </div>
   );
 }

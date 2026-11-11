@@ -4,7 +4,7 @@ import { placeholderPackData } from "../packs/placeholder";
 import { loadPack } from "./content/loader";
 import type { SaveStorage } from "./save";
 import { App } from "./ui/App";
-import { I18nProvider } from "./ui/i18n";
+import { StoreProvider } from "./ui/store";
 import "./ui/styles.css";
 
 /** localStorage can be missing or throw (private mode, blocked storage); keep the game running. */
@@ -34,8 +34,8 @@ if (!root) throw new Error("Missing #root element");
 
 createRoot(root).render(
   <StrictMode>
-    <I18nProvider storage={browserStorage()}>
-      <App pack={pack} />
-    </I18nProvider>
+    <StoreProvider pack={pack} storage={browserStorage()}>
+      <App />
+    </StoreProvider>
   </StrictMode>,
 );
