@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Pack } from "../content/loader";
 import {
   MAX_TEAM_SIZE,
+  newOwnedCharacter,
   createNewGame,
   isBossUnlocked,
   isMapUnlocked,
@@ -21,7 +22,7 @@ const STAGES = pack.maps.get(MAP)!.stages.length;
 
 function clearAllStages(state: GameState): GameState {
   let next = state;
-  for (let i = 0; i < STAGES; i++) next = recordStageResult(next, MAP, i, { winner: "player" });
+  for (let i = 0; i < STAGES; i++) next = recordStageResult(next, pack, MAP, i, { winner: "player" });
   return next;
 }
 
@@ -42,9 +43,9 @@ function withBalance(changes: { recruitRate?: number; itemDropChance?: number })
 describe("new game", () => {
   it("starts with only the starter in the roster and team", () => {
     const state = createNewGame(pack, 42);
-    expect(state.roster).toEqual([{ characterId: "earth-cube", level: 1 }]);
+    expect(state.roster).toEqual([newOwnedCharacter("earth-cube", 1)]);
     expect(state.team).toEqual(["earth-cube"]);
-    expect(teamMembers(state)).toEqual([{ characterId: "earth-cube", level: 1 }]);
+    expect(teamMembers(state)).toEqual([{ characterId: "earth-cube", level: 1, stars: 1, points: {} }]);
   });
 });
 
@@ -59,7 +60,7 @@ describe("unlocks", () => {
 
   it("opens stages in order and the boss after the last stage", () => {
     let state = createNewGame(pack, 1);
-    state = recordStageResult(state, MAP, 0, { winner: "player" });
+    state = recordStageResult(state, pack, MAP, 0, { winner: "player" });
     expect(isStageUnlocked(state, pack, MAP, 1)).toBe(true);
     state = clearAllStages(state);
     expect(isBossUnlocked(state, pack, MAP)).toBe(true);
@@ -67,11 +68,11 @@ describe("unlocks", () => {
 
   it("ignores losses, timeouts and replays of earlier stages", () => {
     let state = createNewGame(pack, 1);
-    state = recordStageResult(state, MAP, 0, { winner: "enemy" });
-    state = recordStageResult(state, MAP, 0, { winner: null });
+    state = recordStageResult(state, pack, MAP, 0, { winner: "enemy" });
+    state = recordStageResult(state, pack, MAP, 0, { winner: null });
     expect(isStageUnlocked(state, pack, MAP, 1)).toBe(false);
-    state = recordStageResult(state, MAP, 0, { winner: "player" });
-    state = recordStageResult(state, MAP, 0, { winner: "player" });
+    state = recordStageResult(state, pack, MAP, 0, { winner: "player" });
+    state = recordStageResult(state, pack, MAP, 0, { winner: "player" });
     expect(state.maps[MAP]?.stagesCleared).toBe(1);
   });
 });
@@ -91,7 +92,7 @@ describe("boss victory", () => {
     const sure = withBalance({ recruitRate: 1, itemDropChance: 0 });
     const { state, rewards } = recordBossVictory(clearAllStages(createNewGame(sure, 1)), sure, MAP, 3);
     expect(rewards.recruitChance).toBe(1);
-    expect(rewards.recruited).toEqual({ characterId: "water-sphere", level: 3 });
+    expect(rewards.recruited).toEqual(newOwnedCharacter("water-sphere", 3));
     expect(state.roster.map((c) => c.characterId)).toContain("water-sphere");
     expect(state.maps[MAP]?.bossDefeated).toBe(true);
   });
@@ -151,8 +152,8 @@ describe("team", () => {
     const state: GameState = {
       ...createNewGame(pack, 1),
       roster: [
-        { characterId: "earth-cube", level: 1 },
-        { characterId: "water-sphere", level: 3 },
+        newOwnedCharacter("earth-cube", 1),
+        newOwnedCharacter("water-sphere", 3),
       ],
     };
     const next = setTeam(state, ["water-sphere", "ghost", "water-sphere", "earth-cube"]);
@@ -166,13 +167,13 @@ describe("sanitize", () => {
   it("drops unknown content and keeps the starter in the team", () => {
     const broken: GameState = {
       ...createNewGame(pack, 1),
-      roster: [{ characterId: "removed-hero", level: 9 }],
+      roster: [newOwnedCharacter("removed-hero", 9)],
       team: ["removed-hero"],
       maps: { "removed-map": { stagesCleared: 3, bossDefeated: true } },
       items: [{ uid: 1, itemId: "removed-item", tier: "rare" }],
     };
     const fixed = sanitizeGameState(broken, pack);
-    expect(fixed.roster).toEqual([{ characterId: "earth-cube", level: 1 }]);
+    expect(fixed.roster).toEqual([newOwnedCharacter("earth-cube", 1)]);
     expect(fixed.team).toEqual(["earth-cube"]);
     expect(fixed.maps).toEqual({});
     expect(fixed.items).toEqual([]);

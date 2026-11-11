@@ -134,6 +134,16 @@ export const skillSchema = z.object({
   effects: z.array(skillEffectSchema).default([]),
 });
 
+/** What one star level changes. The story milestone is a boss that must have been defeated. */
+export const starLevelSchema = z.object({
+  requiresBossOf: id,
+  baseStatBonus: statBlockSchema.partial().default({}),
+  /** Replacement skills by slot (0 = S1). The new skill keeps the slot's usage rules. */
+  skillOverrides: z.array(z.object({ slot: z.int().min(0).max(3), skill: skillSchema })).default([]),
+  /** Extra passive effects added on top of the character's passive. */
+  passiveEffects: z.array(passiveEffectSchema).default([]),
+});
+
 export const passiveSchema = z.object({
   id,
   name: localizedTextSchema,
@@ -152,6 +162,8 @@ export const characterSchema = z.object({
   /** Slot order: S1, S2, S3, S4. Unlock levels live in the balance config. */
   skills: z.array(skillSchema).min(1).max(4),
   itemId: id,
+  /** Star levels above 1★, in order: index 0 is 2★. Each one adds on top of the previous. */
+  stars: z.array(starLevelSchema).default([]),
 });
 
 export const enemySchema = z.object({
@@ -217,6 +229,16 @@ export const worldSchema = z.object({
   maps: z.array(mapSchema).min(1),
 });
 
+/** Side dungeons: daily 5v1 fights against stronger bosses that pay out star materials. */
+export const sideDungeonSchema = z.object({
+  id,
+  name: localizedTextSchema,
+  /** Opens once this map's boss has been defeated. */
+  unlockAfterMapId: id,
+  boss: bossSchema.omit({ recruitRate: true, dropItemId: true }),
+  rewards: z.object({ starMaterial: z.int().min(1) }),
+});
+
 const tierNumbers = z.object({
   common: z.number().min(0),
   rare: z.number().min(0),
@@ -261,7 +283,28 @@ export const balanceSchema = z.object({
     dustForLegendary: z.int().min(1),
   }),
   sideDungeon: z.object({ attemptsPerDay: z.int().min(0) }),
-  offline: z.object({ maxHours: positive }),
+  offline: z.object({
+    maxHours: positive,
+    /** Battles credited per hour away, at the best stage cleared so far. */
+    battlesPerHour: positive,
+    /** Shorter absences give nothing. */
+    minMinutes: z.number().min(0),
+  }),
+  economy: z.object({
+    /** Gold and food per stage win: rate × sum of enemy levels in the stage. */
+    stageReward: z.object({ goldPerEnemyLevel: z.number().min(0), foodPerEnemyLevel: z.number().min(0) }),
+    /** Boss wins pay rate × boss level × this multiplier. */
+    bossRewardMultiplier: z.number().min(0),
+    /** Cost to go from level L to L + 1: floor(base × L ^ exponent). */
+    levelCost: z.object({
+      gold: z.object({ base: positive, exponent: z.number().min(0) }),
+      food: z.object({ base: positive, exponent: z.number().min(0) }),
+    }),
+  }),
+  stars: z.object({
+    /** Star material cost per star level: index 0 is the cost of 2★. */
+    materialCost: z.array(z.int().min(0)).min(1),
+  }),
   status: z.object({
     /** Stat stages are clamped to ±maxStage. */
     maxStage: z.int().min(1),
@@ -287,6 +330,7 @@ export const rawPackSchema = z.object({
   enemies: z.array(enemySchema),
   items: z.array(itemSchema),
   worlds: z.array(worldSchema).min(1),
+  sideDungeons: z.array(sideDungeonSchema).default([]),
 });
 
 export type Element = z.infer<typeof elementSchema>;
@@ -307,6 +351,8 @@ export type Stage = z.infer<typeof stageSchema>;
 export type Boss = z.infer<typeof bossSchema>;
 export type GameMap = z.infer<typeof mapSchema>;
 export type World = z.infer<typeof worldSchema>;
+export type StarLevel = z.infer<typeof starLevelSchema>;
+export type SideDungeon = z.infer<typeof sideDungeonSchema>;
 export type Balance = z.infer<typeof balanceSchema>;
 export type Manifest = z.infer<typeof manifestSchema>;
 export type RawPack = z.infer<typeof rawPackSchema>;

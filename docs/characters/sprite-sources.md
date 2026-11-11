@@ -58,6 +58,15 @@ Số khung là kết quả của `sheet:preview` với gap mặc định 3px. S�
 - **Gin không có ảnh chân dung.** Phương án: cắt một khung đứng yên và phóng to phần đầu làm chân dung. Đây là chỉnh sprite có sẵn, không vẽ mới.
 - **Đầu bếp Baratie** chỉ có 2 khung đứng yên. Phương án: đổi bảng màu hải tặc dao hoặc hải tặc kiếm thành đầu bếp.
 
+## One Piece Mugen V14 (Dark Night Mugen)
+
+Một game MUGEN 1.1 trọn bộ, phát hành tháng 1/2025, 195 nhân vật tính cả các dạng biến hình. File RAR 7 GB, giải nén ra 12 GB, chỉ có trên MediaFire: [trang giới thiệu ở jfmugen.com](https://jfmugen.com/one-piece-mugen/). Người dùng tự tải.
+
+- **Có trong danh sách và liên quan World 1:** Luffy, Zoro, Nami, Usopp, Sanji, Buggy, Kuro, Morgan, Don Krieg. Riêng Morgan là bản MUGEN đầu tiên tìm được.
+- **Không có:** Alvida, Cabaji, Jango, Gin. Bốn boss này vẫn dùng GBA.
+- **Rủi ro:** trang giới thiệu không ghi tác giả của từng nhân vật, cũng không ghi điều kiện dùng lại. Game này gom nhân vật từ nhiều người làm khác nhau, nên nét vẽ và cỡ sprite có thể lệch nhau. Phải đọc dòng `author` trong `.def` và readme của từng nhân vật sau khi giải nén, rồi mới ghi được vào `CREDITS.md`.
+- **Cách dùng:** giải nén, chỉ chép thư mục của các nhân vật cần trong `chars/` vào `assets-raw/op14-<tên>/`, ví dụ `assets-raw/op14-morgan/`. Sau đó chạy `npm run mugen:preview -- op14-morgan` để so sánh với bộ JUS, Gigant Battle và GBA.
+
 ## Nguồn khác đã tìm
 
 - Don Krieg bản MUGEN: [Don Krieg của edd13](https://mugenfreeforall.com/topic/26450-don-krieg-by-edd13-released-dec-27-2015/), sprite gốc của vbc, link tải MediaFire trong bài. Người dùng tự tải.

@@ -56,8 +56,56 @@ describe("save", () => {
 });
 
 describe("migrations", () => {
-  it("upgrades a v1 save (settings only) to v2 with no game", () => {
+  it("upgrades a v1 save (settings only) with no game", () => {
     const v1 = JSON.stringify({ version: 1, settings: { lang: "vi" } });
-    expect(deserializeSave(v1)).toEqual({ version: 2, settings: { lang: "vi" }, game: null });
+    expect(deserializeSave(v1)).toEqual({ version: SAVE_VERSION, settings: { lang: "vi" }, game: null });
+  });
+
+  it("upgrades a v2 save: keeps progress, adds growth fields and empty resources", () => {
+    const v2 = JSON.stringify({
+      version: 2,
+      settings: { lang: "en" },
+      game: {
+        seed: 9,
+        battleCounter: 4,
+        roster: [
+          { characterId: "earth-cube", level: 7 },
+          { characterId: "water-sphere", level: 3 },
+        ],
+        team: ["water-sphere", "earth-cube"],
+        maps: { "training-grounds": { stagesCleared: 10, bossDefeated: true } },
+        items: [{ uid: 1, itemId: "sphere-shard", tier: "rare" }],
+        nextItemUid: 2,
+        completedWorlds: ["training"],
+      },
+    });
+    const loaded = deserializeSave(v2);
+    expect(loaded.version).toBe(SAVE_VERSION);
+    expect(loaded.game).toMatchObject({
+      seed: 9,
+      battleCounter: 4,
+      team: ["water-sphere", "earth-cube"],
+      maps: { "training-grounds": { stagesCleared: 10, bossDefeated: true } },
+      items: [{ uid: 1, itemId: "sphere-shard", tier: "rare" }],
+      gold: 0,
+      food: 0,
+      dust: 0,
+      starMaterial: 0,
+      sideDungeon: { day: "", used: 0 },
+      lastSeenAt: null,
+    });
+    expect(loaded.game?.roster[0]).toEqual({
+      characterId: "earth-cube",
+      level: 7,
+      stars: 1,
+      points: {},
+      skillOrder: null,
+      itemUid: null,
+    });
+  });
+
+  it("upgrades a v2 save with no game", () => {
+    const v2 = JSON.stringify({ version: 2, settings: { lang: "vi" }, game: null });
+    expect(deserializeSave(v2)).toEqual({ version: SAVE_VERSION, settings: { lang: "vi" }, game: null });
   });
 });

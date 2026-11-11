@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { LANGUAGES, isLang } from "../i18n";
 import { BattleScreen, type BattleTarget } from "./screens/BattleScreen";
+import { CharacterScreen } from "./screens/CharacterScreen";
+import { ItemsScreen } from "./screens/ItemsScreen";
 import { MapInfoScreen } from "./screens/MapInfoScreen";
 import { MapListScreen } from "./screens/MapListScreen";
 import { TeamScreen } from "./screens/TeamScreen";
@@ -10,12 +12,25 @@ type Screen =
   | { name: "maps" }
   | { name: "map"; mapId: string }
   | { name: "battle"; target: BattleTarget }
-  | { name: "team" };
+  | { name: "team" }
+  | { name: "character"; characterId: string }
+  | { name: "items" };
+
+type Tab = "maps" | "team" | "items";
+
+function tabOf(screen: Screen): Tab {
+  if (screen.name === "team" || screen.name === "character") return "team";
+  if (screen.name === "items") return "items";
+  return "maps";
+}
 
 export function App() {
   const { t, lang, setLang } = useStore();
   const [screen, setScreen] = useState<Screen>({ name: "maps" });
-  const tab = screen.name === "team" ? "team" : "maps";
+  const tab = tabOf(screen);
+
+  const backFromBattle = (target: BattleTarget): Screen =>
+    target.kind === "dungeon" ? { name: "maps" } : { name: "map", mapId: target.mapId };
 
   return (
     <div className="app" lang={lang}>
@@ -39,26 +54,27 @@ export function App() {
         </label>
       </header>
 
+      <ResourceBar />
+
       <nav className="tabs">
-        <button
-          type="button"
-          className={tab === "maps" ? "tab active" : "tab"}
-          onClick={() => setScreen({ name: "maps" })}
-        >
-          {t("nav.maps")}
-        </button>
-        <button
-          type="button"
-          className={tab === "team" ? "tab active" : "tab"}
-          onClick={() => setScreen({ name: "team" })}
-        >
-          {t("nav.team")}
-        </button>
+        {(["maps", "team", "items"] as const).map((name) => (
+          <button
+            key={name}
+            type="button"
+            className={tab === name ? "tab active" : "tab"}
+            onClick={() => setScreen({ name } as Screen)}
+          >
+            {t(`nav.${name}`)}
+          </button>
+        ))}
       </nav>
 
       <main>
         {screen.name === "maps" && (
-          <MapListScreen onOpenMap={(mapId) => setScreen({ name: "map", mapId })} />
+          <MapListScreen
+            onOpenMap={(mapId) => setScreen({ name: "map", mapId })}
+            onEnterDungeon={(dungeonId) => setScreen({ name: "battle", target: { kind: "dungeon", dungeonId } })}
+          />
         )}
         {screen.name === "map" && (
           <MapInfoScreen
@@ -67,20 +83,71 @@ export function App() {
             onFightStage={(stageIndex) =>
               setScreen({ name: "battle", target: { mapId: screen.mapId, kind: "stage", stageIndex } })
             }
-            onFightBoss={() =>
-              setScreen({ name: "battle", target: { mapId: screen.mapId, kind: "boss" } })
-            }
+            onFightBoss={() => setScreen({ name: "battle", target: { mapId: screen.mapId, kind: "boss" } })}
           />
         )}
         {screen.name === "battle" && (
           <BattleScreen
             key={JSON.stringify(screen.target)}
             target={screen.target}
-            onBack={() => setScreen({ name: "map", mapId: screen.target.mapId })}
+            onBack={() => setScreen(backFromBattle(screen.target))}
           />
         )}
-        {screen.name === "team" && <TeamScreen />}
+        {screen.name === "team" && (
+          <TeamScreen onOpenCharacter={(characterId) => setScreen({ name: "character", characterId })} />
+        )}
+        {screen.name === "character" && (
+          <CharacterScreen characterId={screen.characterId} onBack={() => setScreen({ name: "team" })} />
+        )}
+        {screen.name === "items" && <ItemsScreen />}
       </main>
+
+      <OfflineRewardDialog />
+    </div>
+  );
+}
+
+function ResourceBar() {
+  const { game, t, n } = useStore();
+  const entries = [
+    ["gold", game.gold],
+    ["food", game.food],
+    ["dust", game.dust],
+    ["starMaterial", game.starMaterial],
+  ] as const;
+  return (
+    <ul className="resource-bar small" aria-label="Resources">
+      {entries.map(([key, amount]) => (
+        <li key={key} className={`resource resource-${key}`}>
+          <span className="muted">{t(`resource.${key}`)}</span> <strong>{n(amount)}</strong>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function OfflineRewardDialog() {
+  const { offlineReward, dismissOfflineReward, t, n } = useStore();
+  if (!offlineReward) return null;
+  const minutes = Math.floor(offlineReward.elapsedMs / 60_000);
+  return (
+    <div className="dialog-backdrop" role="presentation">
+      <div className="dialog card" role="dialog" aria-modal="true" aria-labelledby="offline-title">
+        <h2 id="offline-title">{t("offline.title")}</h2>
+        <p className="small">
+          {t("offline.body", {
+            hours: Math.floor(minutes / 60),
+            minutes: minutes % 60,
+            battles: n(offlineReward.battles),
+          })}
+        </p>
+        <p>
+          <strong>{t("rewards.resources", { gold: n(offlineReward.gold), food: n(offlineReward.food) })}</strong>
+        </p>
+        <button type="button" className="primary-button" onClick={dismissOfflineReward}>
+          {t("offline.claim")}
+        </button>
+      </div>
     </div>
   );
 }

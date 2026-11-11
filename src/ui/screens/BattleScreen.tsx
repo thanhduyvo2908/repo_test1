@@ -2,24 +2,34 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { StatusSpec } from "../../content/schema";
 import type { BattleEvent, BattleResult, UnitSummary } from "../../core/battle";
 import type { StringKey, TemplateParams } from "../../i18n";
-import { runBoss, runStage } from "../../core/encounters";
+import { canEnterDungeon, recordDungeonResult } from "../../core/dungeons";
+import { runBoss, runSideDungeon, runStage } from "../../core/encounters";
 import {
   mapOrder,
   recordBossVictory,
   recordStageResult,
+  stageRewards,
   takeBattleSeed,
   teamMembers,
   type BossRewards,
+  type Resources,
 } from "../../core/progress";
 import { BackButton, ElementBadge } from "../common";
 import { passiveName, skillsById, unitName } from "../content";
-import { useStore } from "../store";
+import { todayKey, useStore } from "../store";
 
-export type BattleTarget = { mapId: string; kind: "stage"; stageIndex: number } | { mapId: string; kind: "boss" };
+export type BattleTarget =
+  | { kind: "stage"; mapId: string; stageIndex: number }
+  | { kind: "boss"; mapId: string }
+  | { kind: "dungeon"; dungeonId: string };
 
 interface Outcome {
   result: BattleResult;
   rewards: BossRewards | null;
+  /** Gold and food from a stage win. */
+  resources: Resources | null;
+  /** Star material from a side dungeon win. */
+  starMaterial: number;
   /** True when this boss win opened the next map. */
   nextMapOpened: boolean;
 }
@@ -31,42 +41,64 @@ const LOG_LINES = 8;
 
 /** Plays back a battle log. Stages repeat automatically until the player stops or loses. */
 export function BattleScreen({ target, onBack }: { target: BattleTarget; onBack: () => void }) {
-  const { pack, updateGame, t, l } = useStore();
+  const { pack, updateGame, t, l, n } = useStore();
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [step, setStep] = useState(0);
   const [repeat, setRepeat] = useState(true);
   const [wins, setWins] = useState(0);
+  const [blocked, setBlocked] = useState(false);
   const started = useRef(false);
 
-  const entry = mapOrder(pack).find((e) => e.map.id === target.mapId);
+  const entry = target.kind === "dungeon" ? undefined : mapOrder(pack).find((e) => e.map.id === target.mapId);
+  const dungeon = target.kind === "dungeon" ? pack.sideDungeons.get(target.dungeonId) : undefined;
 
   const start = useCallback(() => {
     let next: Outcome | null = null;
+    let refused = false;
     updateGame((game) => {
+      if (target.kind === "dungeon" && !canEnterDungeon(game, pack, target.dungeonId, todayKey()).ok) {
+        refused = true;
+        return game;
+      }
       const { seed, state } = takeBattleSeed(game);
       const team = teamMembers(state);
+      const base = { rewards: null, resources: null, starMaterial: 0, nextMapOpened: false };
       if (target.kind === "stage") {
         const result = runStage(pack, target.mapId, target.stageIndex, team, seed);
-        next = { result, rewards: null, nextMapOpened: false };
-        return recordStageResult(state, target.mapId, target.stageIndex, result);
+        const stage = pack.maps.get(target.mapId)?.stages[target.stageIndex];
+        const resources = result.winner === "player" && stage ? stageRewards(pack, stage) : null;
+        next = { ...base, result, resources };
+        return recordStageResult(state, pack, target.mapId, target.stageIndex, result);
+      }
+      if (target.kind === "dungeon") {
+        const found = pack.sideDungeons.get(target.dungeonId);
+        if (!found) return state;
+        const result = runSideDungeon(pack, found, team, seed);
+        const recorded = recordDungeonResult(state, pack, target.dungeonId, todayKey(), result);
+        next = { ...base, result, starMaterial: recorded.starMaterial };
+        return recorded.state;
       }
       const result = runBoss(pack, target.mapId, team, seed);
       if (result.winner !== "player") {
-        next = { result, rewards: null, nextMapOpened: false };
+        next = { ...base, result };
         return state;
       }
       const rewardSeed = takeBattleSeed(state);
       const victory = recordBossVictory(rewardSeed.state, pack, target.mapId, rewardSeed.seed);
       const nextMap = entry ? mapOrder(pack)[entry.index + 1] : undefined;
       next = {
+        ...base,
         result,
         rewards: victory.rewards,
         nextMapOpened: victory.rewards.firstClear && nextMap !== undefined,
       };
       return victory.state;
     });
-    setOutcome(next);
-    setStep(0);
+    setBlocked(refused);
+    if (!refused) {
+      setOutcome(next);
+      setStep(0);
+    }
   }, [entry, pack, target, updateGame]);
 
   useEffect(() => {
@@ -179,17 +211,25 @@ export function BattleScreen({ target, onBack }: { target: BattleTarget; onBack:
     .filter((line): line is string => line !== null)
     .slice(-LOG_LINES);
 
-  const title = entry
-    ? target.kind === "stage"
-      ? t("battle.stageTitle", { map: l(entry.map.name), n: target.stageIndex + 1 })
-      : t("battle.bossTitle", { map: l(entry.map.name) })
-    : "";
+  const title =
+    target.kind === "dungeon"
+      ? t("battle.dungeonTitle", { name: dungeon ? l(dungeon.name) : target.dungeonId })
+      : entry
+        ? target.kind === "stage"
+          ? t("battle.stageTitle", { map: l(entry.map.name), n: target.stageIndex + 1 })
+          : t("battle.bossTitle", { map: l(entry.map.name) })
+        : "";
 
   return (
     <>
       <BackButton onClick={onBack} />
       <h2>{title}</h2>
       {target.kind === "stage" && <p className="small muted">{t("battle.wins", { count: wins })}</p>}
+      {blocked && (
+        <p className="error small" role="alert">
+          {t("dungeon.noAttempts")}
+        </p>
+      )}
 
       <div className="battle-field">
         {(["player", "enemy"] as const).map((side) => (
@@ -246,6 +286,12 @@ export function BattleScreen({ target, onBack }: { target: BattleTarget; onBack:
             {outcome.result.winner === "player" ? t("battle.victory") : t("battle.defeat")}
           </strong>
           {outcome.result.winner === null && <p className="small">{t("battle.timeout")}</p>}
+          {outcome.resources && (
+            <p className="small">{t("rewards.resources", { gold: n(outcome.resources.gold), food: n(outcome.resources.food) })}</p>
+          )}
+          {outcome.starMaterial > 0 && (
+            <p className="small">{t("rewards.starMaterial", { amount: outcome.starMaterial })}</p>
+          )}
           {outcome.rewards && entry && (
             <Rewards
               rewards={outcome.rewards}
@@ -287,7 +333,7 @@ function Rewards({
   bossId: string;
   nextMapOpened: boolean;
 }) {
-  const { pack, t, l } = useStore();
+  const { pack, t, l, n } = useStore();
   const bossName = (id: string) => {
     const c = pack.characters.get(id);
     return c ? l(c.name) : id;
@@ -303,6 +349,7 @@ function Rewards({
     <div className="rewards">
       <h4>{t("rewards.title")}</h4>
       <ul className="small">
+        <li>{t("rewards.resources", { gold: n(rewards.resources.gold), food: n(rewards.resources.food) })}</li>
         {rewards.recruited && <li>{t("rewards.recruited", { name: bossName(rewards.recruited.characterId) })}</li>}
         {!rewards.recruited && rewards.recruitChance !== null && rewards.recruitChance > 0 && (
           <li>

@@ -91,7 +91,32 @@
         "usage": { "kind": "oncePerBattle" }
       }
     ],
-    "itemId": "cube-core"
+    "itemId": "cube-core",
+    "stars": [
+      {
+        "requiresBossOf": "training-grounds",
+        "baseStatBonus": { "hp": 5, "atk": 5, "def": 5 },
+        "skillOverrides": [
+          {
+            "slot": 0,
+            "skill": {
+              "id": "earth-cube-s1-star2",
+              "name": { "en": "Draining Slam+", "vi": "Đập hút+" },
+              "description": {
+                "en": "Restores HP equal to 40% of the damage dealt.",
+                "vi": "Hồi HP bằng 40% sát thương gây ra."
+              },
+              "power": 70,
+              "scaling": [{ "stat": "atk", "weight": 1 }],
+              "target": "enemy",
+              "usage": { "kind": "cooldown", "rounds": 2 },
+              "effects": [{ "kind": "lifesteal", "ratio": 0.4 }]
+            }
+          }
+        ],
+        "passiveEffects": []
+      }
+    ]
   },
   {
     "id": "water-sphere",

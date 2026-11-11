@@ -26,9 +26,13 @@ export function skillsById(pack: Pack): Map<string, Skill> {
   if (cached) return cached;
   const byId = new Map<string, Skill>();
   const add = (skill: Skill) => byId.set(skill.id, skill);
-  for (const c of pack.characters.values()) [c.basicAttack, ...c.skills].forEach(add);
+  for (const c of pack.characters.values()) {
+    [c.basicAttack, ...c.skills].forEach(add);
+    for (const star of c.stars) for (const { skill } of star.skillOverrides) add(skill);
+  }
   for (const e of pack.enemies.values()) [e.basicAttack, ...e.skills].forEach(add);
   for (const m of pack.maps.values()) [m.boss.basicAttack, ...m.boss.skills].forEach(add);
+  for (const d of pack.sideDungeons.values()) [d.boss.basicAttack, ...d.boss.skills].forEach(add);
   skillCache.set(pack, byId);
   return byId;
 }

@@ -165,8 +165,8 @@ Quy tắc:
 - Claude tìm và đưa link, tác giả, điều kiện dùng lại. Claude chỉ tự tải file ảnh sheet (GIF, PNG) khi người dùng yêu cầu, sau khi người dùng duyệt danh sách file. File nén nhân vật MUGEN (zip, rar trên MediaFire, Mega) thì người dùng tự tải.
 - Nguồn thô đặt ở `assets-raw/<nhân-vật>/`. Nhân vật MUGEN gồm `.def`, `.sff`, `.air`, `.cmd`, `.cns` và readme của tác giả; nhân vật GBA là một file sheet `.gif` hoặc `.png`. Script trong `tools/` chuyển chúng thành atlas PNG, JSON animation và bản nháp moveset.
 - Mỗi nhân vật nhập vào có một dòng trong `CREDITS.md`: tác giả, nguồn và điều kiện dùng lại ghi trong readme.
-- Nếu các bộ sprite lệch nhau về kích thước hoặc nét vẽ, Claude được chỉnh lại sprite có sẵn: đổi tỉ lệ, căn chỉnh, đổi bảng màu.
-- Không tạo mới hoặc vẽ lại hình nhân vật có bản quyền. Thiếu sprite thì dùng placeholder và báo cho người dùng.
+- Claude được chỉnh sửa sprite có sẵn khi cần: đổi tỉ lệ, căn chỉnh, đổi bảng màu, cắt ghép khung.
+- Người dùng cho phép ngày 11/11/2026: thiếu sprite thì Claude được vẽ bổ sung (khung hoạt ảnh, chân dung, hiệu ứng), bám theo nét vẽ của bộ sprite gốc. Hình vẽ bổ sung ghi rõ trong `docs/characters/<id>.md` và trong bảng thống kê sprite, để phân biệt với sprite gốc. Chưa vẽ được thì dùng placeholder và báo cho người dùng.
 
 ## Lệnh và kiểm tra
 
@@ -229,7 +229,14 @@ Dùng các giá trị này cho tới khi người dùng chốt khác:
 - Nhân vật chiêu mộ được gia nhập ở level của boss, không vượt giới hạn level của World đó.
 - Seed của mỗi trận lấy từ seed của file lưu trộn với bộ đếm số trận. Seed của file lưu do giao diện tạo khi bắt đầu game mới. Kết quả trận được ghi vào file lưu ngay khi mô phỏng xong; phần phát lại chỉ để xem.
 - Mỗi lần hạ boss có 50% rơi item. Bậc rơi theo tỉ lệ 60% Thường, 28% Hiếm, 10% Sử thi, 2% Huyền thoại.
-- Mỗi level cho 3 điểm tự nâng. Mỗi chỉ số nhận tối đa số điểm bằng level của nhân vật. Đặt lại tự do.
+- Mỗi level cho 3 điểm tự nâng, nên tổng điểm là 3 × level. Mỗi chỉ số nhận tối đa số điểm bằng level của nhân vật. Đặt lại tự do.
+- Vàng và food: mỗi lần thắng màn nhỏ, kể cả đánh lại, nhận 5 vàng và 3 food nhân tổng level lính trong màn. Thắng boss nhận 5 vàng và 3 food nhân level boss nhân 10.
+- Chi phí lên level L lên L + 1: 20 × L^1,6 vàng và 10 × L^1,6 food, làm tròn xuống. Giới hạn level là giới hạn của World xa nhất người chơi đã mở.
+- Thứ tự skill người chơi xếp được lưu theo ô. Ô chưa có trong thứ tự xếp, ví dụ skill vừa mở, được thêm vào cuối.
+- Nguyên liệu nâng sao là một loại chung, gọi là đá sao, chỉ rơi từ ải phụ. Chi phí lên 2★, 3★, 4★, 5★, 6★ là 10, 30, 60, 100, 150 đá sao. Mỗi cấp sao trong dữ liệu nhân vật ghi boss cần hạ làm mốc cốt truyện.
+- Ải phụ: 3 lượt thắng mỗi ngày, tính chung cho mọi ải phụ. Thua không mất lượt. Ngày tính theo lịch trên máy người chơi. Ải phụ mở sau khi hạ boss của một map ghi trong dữ liệu, và trả đá sao theo số ghi trong dữ liệu.
+- Đổi bụi lấy được mọi item có boss rơi. Item của nhân vật khởi đầu không đổi được.
+- Thưởng offline: mỗi giờ vắng mặt tính 120 trận ở màn cho nhiều vàng nhất đã qua. Vắng dưới 1 phút không có thưởng. Giao diện lưu thời điểm có mặt mỗi 30 giây và khi người chơi rời trang.
 - Trận boss và ải phụ giới hạn 30 vòng. Ải phụ có 3 lượt mỗi ngày. Thưởng offline tích tối đa 8 giờ.
 - Lưu game trên máy người chơi. Dự án phi thương mại.
 

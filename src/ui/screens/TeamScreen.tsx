@@ -3,7 +3,7 @@ import { ElementBadge } from "../common";
 import { useStore } from "../store";
 
 /** Pick up to five characters and their battle order. */
-export function TeamScreen() {
+export function TeamScreen({ onOpenCharacter }: { onOpenCharacter: (characterId: string) => void }) {
   const { pack, game, updateGame, t, l } = useStore();
 
   const toggle = (characterId: string) => {
@@ -51,14 +51,14 @@ export function TeamScreen() {
 
       <h3>{t("team.roster")}</h3>
       <ul className="card-list">
-        {game.roster.map(({ characterId, level }) => {
+        {game.roster.map(({ characterId, level, stars }) => {
           const character = pack.characters.get(characterId);
           if (!character) return null;
           const inTeam = game.team.includes(characterId);
           const full = !inTeam && game.team.length >= MAX_TEAM_SIZE;
           const last = inTeam && game.team.length === 1;
           return (
-            <li key={characterId}>
+            <li key={characterId} className="roster-row">
               <button
                 type="button"
                 className={`card card-button row${inTeam ? " selected" : ""}`}
@@ -69,7 +69,11 @@ export function TeamScreen() {
                 <strong>{l(character.name)}</strong>
                 <ElementBadge element={character.element} />
                 <span className="muted">{t("team.level", { level })}</span>
+                <span className="stars small">{t("character.stars", { stars })}</span>
                 <span className="muted small push-right">{t(`damageType.${character.damageType}`)}</span>
+              </button>
+              <button type="button" className="secondary-button details-button" onClick={() => onOpenCharacter(characterId)}>
+                {t("team.details")}
               </button>
             </li>
           );

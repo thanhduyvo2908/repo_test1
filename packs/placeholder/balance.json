@@ -45,6 +45,15 @@
     "dustForLegendary": 50
   },
   "sideDungeon": { "attemptsPerDay": 3 },
-  "offline": { "maxHours": 8 },
+  "offline": { "maxHours": 8, "battlesPerHour": 120, "minMinutes": 1 },
+  "economy": {
+    "stageReward": { "goldPerEnemyLevel": 5, "foodPerEnemyLevel": 3 },
+    "bossRewardMultiplier": 10,
+    "levelCost": {
+      "gold": { "base": 20, "exponent": 1.6 },
+      "food": { "base": 10, "exponent": 1.6 }
+    }
+  },
+  "stars": { "materialCost": [10, 30, 60, 100, 150] },
   "status": { "maxStage": 6, "stageStep": 0.5 }
 }

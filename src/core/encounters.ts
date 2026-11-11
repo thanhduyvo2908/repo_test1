@@ -1,12 +1,15 @@
 import type { Pack } from "../content/loader";
-import type { GameMap, ItemTier } from "../content/schema";
+import type { Boss, GameMap, ItemTier, SideDungeon } from "../content/schema";
 import { simulateBattle, type BattleResult, type BattleUnit } from "./battle";
+import { buildAtStars } from "./characterBuild";
 import { computeStats, type StatPoints } from "./stats";
 
 /** One character in the player's team, as the progression system stores it. */
 export interface TeamMember {
   characterId: string;
   level: number;
+  /** 1 when omitted. */
+  stars?: number;
   points?: StatPoints;
   /** Skill slot indexes (0 = S1) in the order the player arranged them. Defaults to S1..S4. */
   skillOrder?: number[];
@@ -19,17 +22,25 @@ function requireMap(pack: Pack, mapId: string): GameMap {
   return map;
 }
 
+/** Slot indexes in battle order: the player's arrangement, then any unlocked slot it left out. */
+export function equippedSlots(skillCount: number, level: number, unlockLevels: number[], order?: number[]): number[] {
+  const all = Array.from({ length: skillCount }, (_, slot) => slot);
+  const arranged = (order ?? all).filter((slot, i, list) => slot >= 0 && slot < skillCount && list.indexOf(slot) === i);
+  const withRest = [...arranged, ...all.filter((slot) => !arranged.includes(slot))];
+  return withRest.filter((slot) => level >= (unlockLevels[slot] ?? Infinity));
+}
+
 export function buildCharacterUnit(pack: Pack, member: TeamMember): BattleUnit {
   const character = pack.characters.get(member.characterId);
   if (!character) throw new Error(`Unknown character "${member.characterId}"`);
-  const { unlockLevels } = pack.balance.skills;
+  const build = buildAtStars(character, member.stars ?? 1);
 
-  const order = member.skillOrder ?? character.skills.map((_, slot) => slot);
-  const skills = order
-    .filter((slot) => slot >= 0 && slot < character.skills.length)
-    .filter((slot) => member.level >= (unlockLevels[slot] ?? Infinity))
-    .filter((slot, i, all) => all.indexOf(slot) === i)
-    .map((slot) => character.skills[slot]!);
+  const skills = equippedSlots(
+    build.skills.length,
+    member.level,
+    pack.balance.skills.unlockLevels,
+    member.skillOrder,
+  ).map((slot) => build.skills[slot]!);
 
   let item: BattleUnit["item"];
   if (member.item) {
@@ -44,11 +55,11 @@ export function buildCharacterUnit(pack: Pack, member: TeamMember): BattleUnit {
     level: member.level,
     element: character.element,
     damageType: character.damageType,
-    stats: computeStats(character.baseStats, member.level, member.points ?? {}, pack.balance),
+    stats: computeStats(build.baseStats, member.level, member.points ?? {}, pack.balance),
     basicAttack: character.basicAttack,
     skills,
     item,
-    passive: { id: character.passive.id, effects: character.passive.effects },
+    passive: { id: character.passive.id, effects: build.passiveEffects },
   };
 }
 
@@ -67,9 +78,11 @@ export function buildEnemyUnit(pack: Pack, enemyId: string, level: number): Batt
   };
 }
 
-/** The boss version of a character: its own base stats and skills, declared in the map. */
-export function buildBossUnit(pack: Pack, map: GameMap): BattleUnit {
-  const { boss } = map;
+/** The boss version of a character: its own base stats and skills, declared in the map or dungeon. */
+export function buildBossUnit(
+  pack: Pack,
+  boss: Pick<Boss, "characterId" | "level" | "baseStats" | "basicAttack" | "skills">,
+): BattleUnit {
   const character = pack.characters.get(boss.characterId);
   if (!character) throw new Error(`Unknown boss character "${boss.characterId}"`);
   return {
@@ -111,9 +124,26 @@ export function runBoss(pack: Pack, mapId: string, team: TeamMember[], seed: num
   return simulateBattle({
     mode: "boss",
     players: team.map((member) => buildCharacterUnit(pack, member)),
-    enemies: [buildBossUnit(pack, map)],
+    enemies: [buildBossUnit(pack, map.boss)],
     seed,
     roundLimit: pack.balance.rounds.boss,
+    balance: pack.balance,
+  });
+}
+
+/** Runs a side dungeon: the whole team against a stronger boss, like a boss fight. */
+export function runSideDungeon(
+  pack: Pack,
+  dungeon: SideDungeon,
+  team: TeamMember[],
+  seed: number,
+): BattleResult {
+  return simulateBattle({
+    mode: "boss",
+    players: team.map((member) => buildCharacterUnit(pack, member)),
+    enemies: [buildBossUnit(pack, dungeon.boss)],
+    seed,
+    roundLimit: pack.balance.rounds.sideDungeon,
     balance: pack.balance,
   });
 }

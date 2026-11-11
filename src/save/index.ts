@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { ITEM_TIERS } from "../content/schema";
+import { ITEM_TIERS, STAT_KEYS } from "../content/schema";
 import type { GameState } from "../core/progress";
 import { DEFAULT_LANG, LANGUAGES, type Lang } from "../i18n";
 
 // Versioned save file. Bump SAVE_VERSION and add a migration whenever the shape changes.
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 export interface SaveData {
   version: typeof SAVE_VERSION;
@@ -30,20 +30,60 @@ type RawSave = Record<string, unknown>;
 export const migrations: Record<number, (save: RawSave) => RawSave> = {
   // v1 → v2: progression added. v1 saves only held settings.
   1: (save) => ({ ...save, version: 2, game: null }),
+  // v2 → v3: growth (stars, points, skill order, equipped item), resources, side dungeons, offline time.
+  2: (save) => {
+    const game = save.game as Record<string, unknown> | null | undefined;
+    if (!game || typeof game !== "object") return { ...save, version: 3, game: null };
+    const roster = Array.isArray(game.roster) ? game.roster : [];
+    return {
+      ...save,
+      version: 3,
+      game: {
+        ...game,
+        roster: roster.map((c: Record<string, unknown>) => ({
+          ...c,
+          stars: 1,
+          points: {},
+          skillOrder: null,
+          itemUid: null,
+        })),
+        gold: 0,
+        food: 0,
+        dust: 0,
+        starMaterial: 0,
+        sideDungeon: { day: "", used: 0 },
+        lastSeenAt: null,
+      },
+    };
+  },
 };
 
+const count = z.int().min(0);
+
 const gameStateSchema = z.object({
-  seed: z.int().min(0),
-  battleCounter: z.int().min(0),
-  roster: z.array(z.object({ characterId: z.string(), level: z.int().min(1) })),
-  team: z.array(z.string()),
-  maps: z.record(
-    z.string(),
-    z.object({ stagesCleared: z.int().min(0), bossDefeated: z.boolean() }),
+  seed: count,
+  battleCounter: count,
+  roster: z.array(
+    z.object({
+      characterId: z.string(),
+      level: z.int().min(1),
+      stars: z.int().min(1),
+      points: z.partialRecord(z.enum(STAT_KEYS), count),
+      skillOrder: z.array(count).nullable(),
+      itemUid: z.int().nullable(),
+    }),
   ),
+  team: z.array(z.string()),
+  maps: z.record(z.string(), z.object({ stagesCleared: count, bossDefeated: z.boolean() })),
   items: z.array(z.object({ uid: z.int(), itemId: z.string(), tier: z.enum(ITEM_TIERS) })),
   nextItemUid: z.int().min(1),
   completedWorlds: z.array(z.string()),
+  gold: count,
+  food: count,
+  dust: count,
+  starMaterial: count,
+  sideDungeon: z.object({ day: z.string(), used: count }),
+  lastSeenAt: z.number().nullable(),
 });
 
 const saveSchema = z.object({

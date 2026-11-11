@@ -6,6 +6,7 @@ import {
   type GameMap,
   type Item,
   type Manifest,
+  type SideDungeon,
   type World,
 } from "./schema";
 
@@ -17,6 +18,7 @@ export interface Pack {
   items: ReadonlyMap<string, Item>;
   worlds: readonly World[];
   maps: ReadonlyMap<string, GameMap>;
+  sideDungeons: ReadonlyMap<string, SideDungeon>;
 }
 
 export class PackError extends Error {
@@ -83,6 +85,22 @@ export function loadPack(input: unknown): Pack {
         issues.push(`character "${character.id}" skill S${slot + 1} must use kind "${expected}"`);
       }
     });
+    if (character.stars.length > balance.stars.materialCost.length) {
+      issues.push(`character "${character.id}" has more star levels than balance.stars.materialCost`);
+    }
+    character.stars.forEach((star, i) => {
+      const label = `character "${character.id}" ${i + 2}★`;
+      if (!maps.has(star.requiresBossOf)) {
+        issues.push(`${label} requires unknown map "${star.requiresBossOf}"`);
+      }
+      for (const { slot, skill } of star.skillOverrides) {
+        const original = character.skills[slot];
+        if (!original) issues.push(`${label} overrides missing skill slot S${slot + 1}`);
+        else if (original.usage.kind !== skill.usage.kind) {
+          issues.push(`${label} override for S${slot + 1} must keep usage kind "${original.usage.kind}"`);
+        }
+      }
+    });
   }
 
   for (const item of items.values()) {
@@ -111,6 +129,16 @@ export function loadPack(input: unknown): Pack {
     }
   }
 
+  const sideDungeons = indexById(raw.sideDungeons, "side dungeon", issues);
+  for (const dungeon of sideDungeons.values()) {
+    if (!maps.has(dungeon.unlockAfterMapId)) {
+      issues.push(`side dungeon "${dungeon.id}" unlocks after unknown map "${dungeon.unlockAfterMapId}"`);
+    }
+    if (!characters.has(dungeon.boss.characterId)) {
+      issues.push(`side dungeon "${dungeon.id}" boss "${dungeon.boss.characterId}" is not a character`);
+    }
+  }
+
   if (balance.damage.randomMin > balance.damage.randomMax) {
     issues.push("balance.damage.randomMin is greater than randomMax");
   }
@@ -125,5 +153,6 @@ export function loadPack(input: unknown): Pack {
     items,
     worlds: raw.worlds,
     maps,
+    sideDungeons,
   };
 }

@@ -1,0 +1,39 @@
+[
+  {
+    "id": "sphere-trial",
+    "name": { "en": "Sphere Trial", "vi": "Thử thách Cầu" },
+    "unlockAfterMapId": "training-grounds",
+    "boss": {
+      "characterId": "water-sphere",
+      "level": 8,
+      "baseStats": { "hp": 300, "atk": 40, "def": 90, "spa": 100, "spd": 100, "spe": 70 },
+      "basicAttack": {
+        "id": "trial-water-sphere-basic",
+        "name": { "en": "Splash", "vi": "Té nước" },
+        "description": { "en": "A basic attack.", "vi": "Đòn đánh thường." },
+        "power": 40,
+        "scaling": [{ "stat": "spa", "weight": 1 }],
+        "target": "enemy",
+        "usage": { "kind": "basic" }
+      },
+      "skills": [
+        {
+          "id": "trial-water-sphere-wave",
+          "name": { "en": "Tidal Wave", "vi": "Sóng thần" },
+          "description": {
+            "en": "Hits the whole team and lowers their Speed by 1 stage for 2 turns.",
+            "vi": "Đánh cả đội và giảm 1 bậc Tốc độ trong 2 lượt."
+          },
+          "power": 60,
+          "scaling": [{ "stat": "spa", "weight": 1 }],
+          "target": "allEnemies",
+          "usage": { "kind": "cooldown", "rounds": 3 },
+          "effects": [
+            { "kind": "status", "status": { "kind": "statStage", "stat": "spe", "stages": -1 }, "duration": 2 }
+          ]
+        }
+      ]
+    },
+    "rewards": { "starMaterial": 5 }
+  }
+]

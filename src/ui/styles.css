@@ -419,3 +419,122 @@ p {
   margin: 0;
   padding-left: 18px;
 }
+
+.resource-bar {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.stars {
+  color: var(--tier-legendary);
+  font-weight: 700;
+}
+
+.error {
+  color: var(--lose);
+}
+
+.roster-row {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.roster-row .card-button {
+  flex: 1;
+  min-width: 0;
+}
+
+.details-button {
+  margin-top: 0;
+  flex: none;
+}
+
+section.card {
+  margin-top: 12px;
+}
+
+section.card h3 {
+  margin-top: 0;
+}
+
+.stat-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.stat-table th {
+  text-align: left;
+  font-weight: 500;
+  padding: 4px 0;
+}
+
+.stat-table .num,
+.point-controls .num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.point-controls {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+}
+
+.point-controls button {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.point-controls .num {
+  min-width: 2ch;
+}
+
+.skill-order-row {
+  display: grid;
+  gap: 4px;
+}
+
+.skill-order-row.locked {
+  opacity: 0.6;
+}
+
+.select {
+  font: inherit;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.exchange {
+  margin-top: 16px;
+}
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(0 0 0 / 0.45);
+}
+
+.dialog {
+  width: min(360px, 100%);
+}
+
+.dialog h2 {
+  margin-top: 0;
+}
