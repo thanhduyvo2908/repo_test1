@@ -141,6 +141,54 @@ Lý do: từ level 20 người chơi đã có đội. Fusen biến Luffy thành 
 | Hồi chiêu | Không, 1 lần mỗi trận |
 | Hiệu ứng | Choáng 1 vòng, tỉ lệ 30%. Nhóm: khống chế. |
 
+## Dữ liệu theo schema
+
+**Đề xuất.** Bản ghi đúng tên trường của `src/content/schema.ts` (`skillSchema`, `skillEffectSchema`, `passiveEffectSchema`), để chép sang `packs/onepiece/` không phải dịch lại. Thời gian hiệu ứng (`duration`) tính bằng lượt của người mang; lượt tự áp hiệu ứng lên mình không tính. Thiếu `id` và chuỗi `en`/`vi` của tên, mô tả: lấy từ các bảng ở trên.
+
+```jsonc
+{
+  "element": "earth",
+  "damageType": "physical",
+  "baseStats": { "hp": 90, "atk": 100, "def": 75, "spa": 40, "spd": 70, "spe": 85 },
+  "passive": {
+    "effects": [
+      // Rubber Body: 20% less physical damage for the whole battle.
+      { "trigger": "battleStart",
+        "effect": { "kind": "status", "target": "self", "chance": 1, "duration": null,
+                    "status": { "kind": "damageReduction", "damageType": "physical", "ratio": 0.2 } } },
+      // First time HP drops below 50%: heal 20% of max HP.
+      { "trigger": "hpBelow", "threshold": 0.5,
+        "effect": { "kind": "heal", "target": "self", "amount": { "stat": "hp", "ratio": 0.2, "of": "caster" } } }
+    ]
+  },
+  "basicAttack": {
+    "power": 40, "scaling": [{ "stat": "atk", "weight": 1 }], "target": "enemy",
+    "usage": { "kind": "basic" }, "effects": []
+  },
+  "skills": [
+    // S1 Gum-Gum Pistol
+    { "power": 80, "scaling": [{ "stat": "atk", "weight": 1 }], "target": "enemy",
+      "usage": { "kind": "cooldown", "rounds": 2 },
+      "effects": [{ "kind": "lifesteal", "ratio": 0.3 }] },
+    // S2 Gum-Gum Balloon: no damage; scaling is required by the schema but unused at power 0.
+    { "power": 0, "scaling": [{ "stat": "hp", "weight": 1 }], "target": "self",
+      "usage": { "kind": "cooldown", "rounds": 4 },
+      "effects": [
+        { "kind": "status", "target": "self", "chance": 1, "duration": 2,
+          "status": { "kind": "shield", "amount": { "stat": "hp", "ratio": 0.25, "of": "caster" } } },
+        { "kind": "status", "target": "self", "chance": 1, "duration": 2, "status": { "kind": "taunt" } }
+      ] },
+    // S3 Gum-Gum Bazooka
+    { "power": 150, "scaling": [{ "stat": "atk", "weight": 1 }], "target": "enemy",
+      "usage": { "kind": "oncePerBattle" },
+      "effects": [{ "kind": "status", "target": "targets", "chance": 0.3, "duration": 1, "status": { "kind": "stun" } }] }
+  ],
+  "itemId": "straw-hat" // id tạm, chưa có item này trong pack
+}
+```
+
+Bản 2 sao theo mục dưới: `baseStats` cộng `hp`, `atk`, `def` mỗi chỉ số 5; `hpBelow` heal `ratio` 0.3; Pistol `power` 90, `lifesteal` 0.4, thêm `{ "kind": "status", "target": "targets", "chance": 0.2, "duration": 2, "status": { "kind": "statStage", "stat": "def", "stages": -1 } }`; Bazooka stun `chance` 0.5. Schema hiện chưa có chỗ khai báo cấp sao; khi session chính thêm thì chép vào đó.
+
 ## Lên 2 sao
 
 **Đề xuất.**
@@ -159,7 +207,6 @@ Lý do: từ level 20 người chơi đã có đội. Fusen biến Luffy thành 
 
 ## Câu hỏi cho người dùng
 
-- Hút máu theo sát thương và giảm sát thương vật lý không có tên riêng trong 4 nhóm hiệu ứng đã chốt. Bản đề xuất xếp cả hai vào nhóm bảo vệ và hồi phục. Engine cần hỗ trợ hai kiểu này nếu người dùng duyệt.
 - Có muốn Luffy là nhân vật đỡ đòn (Fusen khiêu khích) hay thuần sát thương? Nếu thuần sát thương, S2 đổi thành Gomu Gomu no Gatling.
 
 ## Tư liệu: chiêu của Luffy ở East Blue
