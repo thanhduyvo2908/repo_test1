@@ -58,21 +58,21 @@ Bộ skill của Luffy và 12 boss do người dùng thiết kế sau. Không t�
 
 Hệ và tên item là **đề xuất**. Riêng hệ Thổ của Luffy lấy từ ví dụ của người dùng. Hiệu ứng của từng item chưa thiết kế; khi thiết kế, theo mẫu trong `CLAUDE.md`: hiệu ứng gắn với hệ và loại sát thương của nhân vật chủ.
 
-| Nhân vật | Nguồn | Chiêu mộ | Hệ | Item (EN) | Item (VI) | Sprite (tình trạng ngày 11/11/2026; chưa bộ nào tải vào `assets-raw/`; link ở `docs/characters/sprite-sources.md`) |
+| Nhân vật | Nguồn | Chiêu mộ | Hệ | Item (EN) | Item (VI) | Sprite (tình trạng ngày 11/11/2026; chi tiết ở `docs/characters/sprite-sources.md`) |
 | --- | --- | --- | --- | --- | --- | --- |
 | Luffy | Khởi đầu | Có sẵn | Thổ | Straw Hat | Mũ rơm | Có: JUS gốc, Gigant Battle |
-| Alvida | Boss map 1 | 20% | Thủy | Iron Mace | Chùy sắt | Đã tìm: GBA rip. Bản MUGEN chỉ là hình tĩnh |
+| Alvida | Boss map 1 | 20% | Thủy | Iron Mace | Chùy sắt | Đã tải: GBA (bản béo và bản gầy) |
 | Zoro | Boss map 2 | 10% | Kim | Wado Ichimonji | Wado Ichimonji | Có: JUS gốc, Gigant Battle |
-| Morgan | Boss map 3 | 20% | Kim | Axe Hand | Tay rìu | Đã tìm: GBA rip |
+| Morgan | Boss map 3 | 20% | Kim | Axe Hand | Tay rìu | Đã tải: GBA |
 | Nami | Boss map 4 | 10% | Thủy | Nami's Staff | Gậy của Nami | Có: JUS gốc, Gigant Battle |
-| Cabaji | Boss map 5 | 20% | Hỏa | Unicycle | Xe đạp một bánh | Đã tìm: GBA rip |
+| Cabaji | Boss map 5 | 20% | Hỏa | Unicycle | Xe đạp một bánh | Đã tải: GBA, chỉ 10 khung, thiếu đứng yên, trúng đòn, gục |
 | Buggy | Boss map 6 | 20% | Hỏa | Buggy Ball | Đạn Buggy | Có: Gigant Battle |
 | Usopp | Boss map 7 | 10% | Mộc | Slingshot | Ná cao su | Có: Gigant Battle |
-| Jango | Boss map 8 | 20% | Mộc | Hypnosis Ring | Vòng thôi miên | Đã tìm: GBA rip |
+| Jango | Boss map 8 | 20% | Mộc | Hypnosis Ring | Vòng thôi miên | Đã tải: GBA |
 | Kuro | Boss map 9 | 20% | Bóng tối | Cat Claws | Vuốt mèo | Có: Gigant Battle |
 | Sanji | Boss map 10 | 10% | Hỏa | Chef's Shoes | Giày đầu bếp | Có: JUS gốc, Gigant Battle |
-| Gin | Boss map 11 | 20% | Thổ | Iron Ball Tonfa | Tonfa bi sắt | Đã tìm: GBA rip |
-| Don Krieg | Boss map 12 | 20% | Kim | Wootz Steel Armor | Giáp Wootz | Đã tìm: MUGEN (edd13), GBA rip |
+| Gin | Boss map 11 | 20% | Thổ | Iron Ball Tonfa | Tonfa bi sắt | Đã tải: GBA, thiếu chân dung |
+| Don Krieg | Boss map 12 | 20% | Kim | Wootz Steel Armor | Giáp Wootz | MUGEN (edd13) chưa tải; đã tải GBA dự phòng |
 
 Mũ rơm không rơi từ boss. Người chơi nhận Mũ rơm bậc Huyền thoại khi hạ Don Krieg lần đầu.
 

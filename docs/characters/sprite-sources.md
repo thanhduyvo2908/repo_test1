@@ -1,54 +1,71 @@
 # Nguồn sprite cho World 1
 
-Tình trạng ngày 11/11/2026. Người dùng tự tải file; Claude chỉ tìm và ghi nguồn. Tải xong thì giải nén vào `assets-raw/<id>/`. Thư mục này đã nằm trong `.gitignore`.
+Tình trạng ngày 11/11/2026. Mọi nguồn sprite nằm trong `assets-raw/<id>/`; thư mục này đã nằm trong `.gitignore`. Người rip và điều kiện dùng lại của từng sheet ghi ở `CREDITS.md`.
 
 ## Hai loại nguồn
 
-1. **Nhân vật MUGEN** (`.def`, `.sff`, `.air`, `.cmd`, `.cns`). Đây là định dạng mà `npm run mugen:preview` đọc được.
-2. **Sprite sheet rip từ game One Piece trên GBA** (Bandai, 2005, thể loại beat 'em up) ở [Sprite Database](https://spritedatabase.net/game/1089). Mỗi nhân vật là một file GIF hoặc PNG gồm mọi khung hình, không có dữ liệu hoạt ảnh. Tool trong repo chưa đọc được định dạng này: cần thêm một script cắt sheet thành từng khung.
+1. **Nhân vật MUGEN** (`.def`, `.sff`, `.air`, `.cmd`, `.cns`). Xem bằng `npm run mugen:preview -- <id>`. Người dùng tự tải các bộ này, vì chúng là file nén trên MediaFire hoặc Mega.
+2. **Sprite sheet rip từ game One Piece trên GBA** (Bandai, 2005, thể loại beat 'em up) ở [Sprite Database](https://spritedatabase.net/game/1089). Mỗi nhân vật là một file GIF hoặc PNG gồm mọi khung hình, không có dữ liệu hoạt ảnh. Xem bằng `npm run sheet:preview -- <id>`: script cắt sheet thành từng khung đánh số. Hoạt ảnh khai báo trong `tools/sheets/<id>.json`.
 
-Bộ GBA có đủ cả 6 boss còn thiếu, các loại lính, và cả băng Mũ Rơm, Buggy, Kuro, cùng một nét vẽ. Điều kiện của trang: dùng riêng tư hoặc phi thương mại. Trên sheet ghi người rip là "Grim" và yêu cầu ghi công khi dùng. Sheet NPC do Harsh29 rip.
+Trang Sprite Database chỉ cho dùng riêng tư hoặc phi thương mại. Mỗi sheet do một người rip khác nhau (Grim, harsh29, Croix, WingedDestiny, oO/Kodama). Phần lớn yêu cầu ghi công.
 
-## Boss còn thiếu
+## Quyết định của người dùng
 
-| Boss | Nguồn tốt nhất | Link | Tác giả / người rip | Điều kiện dùng lại | Ghi chú |
-| --- | --- | --- | --- | --- | --- |
-| Alvida | GBA rip | [Alvida (béo)](https://spritedatabase.net/file/4043), [Alvida (gầy)](https://spritedatabase.net/file/4044) | Grim | Phi thương mại, ghi công | Có bản MUGEN của Walruslui trên [AK1](https://www.andersonkenya1.net/files/file/12158-alvida/), nhưng đánh giá trên trang nói nhân vật chỉ là một hình tĩnh, không có hoạt ảnh. Không dùng được. |
-| Morgan | GBA rip | [Axe-Hand Morgan](https://spritedatabase.net/file/4046) | Grim | Phi thương mại, ghi công | Không tìm thấy bản MUGEN. |
-| Cabaji | GBA rip | [Cabaji](https://spritedatabase.net/file/4047) | Grim | Phi thương mại, ghi công | Không tìm thấy bản MUGEN. |
-| Jango | GBA rip | [Jango](https://spritedatabase.net/file/4052) | Grim | Phi thương mại, ghi công | Game MUGEN "Grand Line Bout" có Jango, nhưng diễn đàn của game trên Tapatalk không mở được từ trình duyệt của Claude. |
-| Gin | GBA rip | [Gin](https://spritedatabase.net/file/4055) | Grim | Phi thương mại, ghi công | Không tìm thấy bản MUGEN. |
-| Don Krieg | MUGEN hoặc GBA rip | MUGEN: [Don Krieg của edd13](https://mugenfreeforall.com/topic/26450-don-krieg-by-edd13-released-dec-27-2015/) (link tải trong bài: MediaFire `DonKrieg.zip`). GBA: [Don Krieg](https://spritedatabase.net/file/4056) | MUGEN: edd13, sprite gốc của vbc. GBA: Grim | MUGEN: bài đăng không ghi điều kiện; xem readme sau khi tải. GBA: phi thương mại, ghi công | Sheet GBA có: đứng, đi, khiên bắn đạn, bom nổ, đấm, đòn quét bằng áo choàng, gục, ảnh chân dung. Đủ cho 4 skill. |
+Ưu tiên MUGEN; nhân vật nào thiếu bản MUGEN dùng được thì lấy sheet GBA đắp vào, đổi tỉ lệ và bảng màu cho khớp.
 
-## Lính
-
-| Bộ lính | Nguồn | Link | Ghi chú |
+| Nhân vật | Nguồn chọn | Thư mục `assets-raw/` | Tình trạng |
 | --- | --- | --- | --- |
-| Hải tặc | GBA rip | [Pirate (sword)](https://spritedatabase.net/file/4034), [Pirate (gun)](https://spritedatabase.net/file/4035), [Pirate (knife)](https://spritedatabase.net/file/4036), [Pirate (bomb)](https://spritedatabase.net/file/4037) | 4 kiểu vũ khí. Đổi bảng màu để làm hải tặc Alvida, Buggy, Mèo Đen, Krieg. |
-| Lính hải quân | GBA rip | [Marine Swordsman](https://spritedatabase.net/file/4038), [Marine Rifleman](https://spritedatabase.net/file/4039) | Đổi màu để làm sĩ quan. |
-| Đầu bếp | GBA rip, thiếu | [NPC's](https://spritedatabase.net/file/4061) | Sheet NPC có 2 đầu bếp Baratie nhưng chỉ có 2 khung đứng yên, không có đòn đánh. Phương án: đổi màu hải tặc thành đầu bếp, hoặc dùng sheet NPC cho đứng yên và mượn đòn của hải tặc. |
-| Lính có tên | GBA rip | [Helmeppo](https://spritedatabase.net/file/4045), [Mohji & Richie](https://spritedatabase.net/file/4048), [Nyaban Brothers (Sham, Buchi)](https://spritedatabase.net/file/4051), [Pearl](https://spritedatabase.net/file/4054) | Khớp danh sách lính mạnh đề xuất trong `docs/world-1.md`. Không có Fullbody. |
+| Luffy, Zoro, Nami, Sanji | MUGEN: JUS gốc hoặc Gigant Battle, chọn sau khi so sánh | `luffy-jus`, `luffy-gb`, ... | Chưa tải |
+| Buggy, Usopp, Kuro | MUGEN: Gigant Battle | `buggy-gb`, `usopp-gb`, `kuro-gb` | Chưa tải |
+| Don Krieg | MUGEN của edd13; nếu bản này hỏng hoặc thiếu đòn thì dùng GBA | `krieg`, dự phòng `krieg-gba` | Bản MUGEN chưa tải; sheet GBA đã tải |
+| Alvida | GBA | `alvida-gba` | Đã tải 2 sheet |
+| Morgan | GBA | `morgan-gba` | Đã tải |
+| Cabaji | GBA | `cabaji-gba` | Đã tải, thiếu hoạt ảnh (xem dưới) |
+| Jango | GBA | `jango-gba` | Đã tải |
+| Gin | GBA | `gin-gba` | Đã tải, thiếu ảnh chân dung |
+| Hải tặc, lính hải quân, đầu bếp | GBA | `pirate-gba`, `marine-gba`, `npc-gba` | Đã tải |
+| Helmeppo, Mohji và Richie, Sham và Buchi, Pearl | GBA | `helmeppo-gba`, `mohji-gba`, `nyaban-gba`, `pearl-gba` | Đã tải |
 
-## Nhân vật đã có sprite từ trước
+## Nội dung các sheet GBA đã tải
 
-Luffy, Zoro, Nami, Sanji (JUS gốc và Gigant Battle), Buggy, Usopp, Kuro (Gigant Battle). Người dùng đã tìm các bộ này nhưng chưa tải vào `assets-raw/`. Bộ GBA cũng có sheet của cả 7 nhân vật này: [Luffy](https://spritedatabase.net/file/4029), [Zoro](https://spritedatabase.net/file/4030), [Nami](https://spritedatabase.net/file/4031), [Usopp](https://spritedatabase.net/file/4032), [Sanji](https://spritedatabase.net/file/4033), [Buggy](https://spritedatabase.net/file/4049), [Kuro](https://spritedatabase.net/file/4053).
+Số khung là kết quả của `sheet:preview` với gap mặc định 3px. Số này gồm cả dòng chữ ghi công trên sheet.
 
-## Quyết định của người dùng (11/11/2026)
+| Sheet | Khung | Có gì | Thiếu gì |
+| --- | --- | --- | --- |
+| Alvida (béo), `Alvida.gif` | 33 | Đứng, nhiều đòn vung chùy, đập đất tung bụi, trúng đòn, ngã lăn, icon chân dung nhỏ | Ảnh chân dung cỡ lớn |
+| Alvida (gầy), `Alvida2.gif` | 25 | Màn mở đầu tung áo choàng, vung chùy, đập đất, gục, khung chân dung trên thanh máu | |
+| Morgan, `Morgan.gif` | 60 | Đứng (mặc áo khoác và không áo), chém rìu có vệt sáng, bổ rìu xuống đất tung đá, phóng sóng hình trăng khuyết, trúng đòn, gục, ảnh chân dung lớn | |
+| Cabaji, `Cabaji.gif` | 10 | Đạp xe một bánh, chém kiếm có vệt lửa | Đứng yên, trúng đòn, gục, chân dung. Dòng chữ trên sheet ghi đây là toàn bộ hoạt ảnh của Cabaji trong game |
+| Jango, `Django.gif` | 58 | Đứng, đi kiểu moonwalk, đung đưa vòng thôi miên, ngủ (có bóng chữ Zzz), ném vòng chakram, gục, ảnh chân dung | |
+| Gin, `Ghin.gif` | 61 | Đứng, xoay tonfa bi sắt, quét, ném bi, nhảy đập, trúng đòn, gục | Ảnh chân dung |
+| Don Krieg, `DonKrieg.gif` | 88 | Đứng, đi, khiên bắn đạn, bom nổ, đấm, đòn quét áo choàng, gục, ảnh chân dung | |
+| Hải tặc kiếm, `SwdPirates.gif` | 54 | Hai kiểu (khăn xanh dương, khăn xanh lá), mỗi kiểu có bảng màu thay thế; đứng, đi, chém, trúng đòn, gục | |
+| Hải tặc súng, `GunPirate.gif` | 26 | Đứng, bắn, trúng đòn, gục, bảng màu thay thế | |
+| Hải tặc dao, `KnifePirate.gif` | 53 | Ném dao, tung hứng, đi, trúng đòn; nhóm "Jugglers" và "Walkers" kèm cờ băng | Hợp làm nghệ sĩ xiếc của Buggy |
+| Hải tặc bom, `BombPirate.gif` | 29 | Đu dây, ném bom, chuỗi nổ, gục | |
+| Lính hải quân kiếm, `MarineSword.gif` | 13 | Đứng, chém có vệt sáng, trúng đòn, gục | |
+| Lính hải quân súng, `MarineRifle.gif` | 21 | Đứng, bắn, đạn nổ, trúng đòn, gục | |
+| NPC, `NPCs.png` | 59 | Dân làng, 2 đầu bếp Baratie | Đầu bếp chỉ có 2 khung đứng yên |
+| Helmeppo, `Helmeppo.gif` | 28 | Đứng, hoảng sợ, trúng đòn, gục | Đòn đánh |
+| Mohji và Richie, `MohjiandRichie.gif` | 49 | Sư tử Richie: gầm, vồ, cào, gục. Mohji: ra lệnh, trúng đòn, gục, chân dung. Có kèm một hình nền sân khấu (thành 1 khung lớn) | |
+| Sham và Buchi, `NyabanBros.gif` | 16 | Buchi: dậm đất, nhảy. Sham: cào, trúng đòn | |
+| Pearl, `Pearl.gif` | 16 | Đứng sau khiên, khiên bốc lửa, cầu lửa, ngã | |
 
-Ưu tiên MUGEN; nhân vật nào thiếu bản MUGEN dùng được thì lấy sheet GBA đắp vào, đổi tỉ lệ và bảng màu cho khớp. Theo đó:
+## Vấn đề cần người dùng quyết
 
-| Nhân vật | Nguồn chọn | Thư mục `assets-raw/` |
-| --- | --- | --- |
-| Luffy, Zoro, Nami, Sanji | MUGEN: JUS gốc hoặc Gigant Battle, chọn sau khi so sánh | `luffy-jus`, `luffy-gb`, ... |
-| Buggy, Usopp, Kuro | MUGEN: Gigant Battle | `buggy-gb`, `usopp-gb`, `kuro-gb` |
-| Don Krieg | MUGEN của edd13. Nếu bản này hỏng hoặc thiếu đòn, dùng GBA | `krieg` |
-| Alvida, Morgan, Cabaji, Jango, Gin | GBA | `alvida-gba`, `morgan-gba`, `cabaji-gba`, `jango-gba`, `gin-gba` |
-| Hải tặc, lính hải quân, đầu bếp | GBA | `pirate-gba`, `marine-gba`, `npc-gba` |
+- **Cabaji không đủ hoạt ảnh** cho một boss có 3 skill. Phương án: (a) dùng 10 khung có sẵn, ghép đòn đánh thường, S1, S2, S3 từ cùng một chuỗi chém, còn trúng đòn và gục thì dùng hiệu ứng nháy hoặc đổ ngã bằng code; (b) tìm thêm nguồn khác cho Cabaji.
+- **Alvida dùng bản béo hay gầy.** Ở map 1, lúc đánh Luffy, Alvida đang béo; bản gầy xuất hiện sau khi ăn trái ác quỷ. Đề xuất: boss map 1 dùng bản béo.
+- **Gin không có ảnh chân dung.** Phương án: cắt một khung đứng yên và phóng to phần đầu làm chân dung. Đây là chỉnh sprite có sẵn, không vẽ mới.
+- **Đầu bếp Baratie** chỉ có 2 khung đứng yên. Phương án: đổi bảng màu hải tặc dao hoặc hải tặc kiếm thành đầu bếp.
 
-Sheet GBA xem bằng `npm run sheet:preview -- <id>`.
+## Nguồn khác đã tìm
+
+- Don Krieg bản MUGEN: [Don Krieg của edd13](https://mugenfreeforall.com/topic/26450-don-krieg-by-edd13-released-dec-27-2015/), sprite gốc của vbc, link tải MediaFire trong bài. Người dùng tự tải.
+- Alvida bản MUGEN của Walruslui trên [AK1](https://www.andersonkenya1.net/files/file/12158-alvida/): đánh giá trên trang nói nhân vật chỉ là một hình tĩnh. Không dùng.
+- Bộ GBA còn có sheet của các nhân vật đã có MUGEN, dùng làm dự phòng: [Luffy](https://spritedatabase.net/file/4029), [Zoro](https://spritedatabase.net/file/4030), [Nami](https://spritedatabase.net/file/4031), [Usopp](https://spritedatabase.net/file/4032), [Sanji](https://spritedatabase.net/file/4033), [Buggy](https://spritedatabase.net/file/4049), [Kuro](https://spritedatabase.net/file/4053).
 
 ## Nguồn đã thử mà không vào được
 
 - Mugenarchive: Cloudflare chặn. Claude không vượt qua bước xác minh.
-- Diễn đàn One Piece MUGEN "Grand Line Bout" trên Tapatalk: trình duyệt của Claude không mở được.
+- Diễn đàn One Piece MUGEN "Grand Line Bout" trên Tapatalk: trình duyệt của Claude không mở được. Game này có Jango, Kuro, Don Krieg, Sham và Buchi.
 - MUGEN Database (Fandom): không có trang cho các boss này.

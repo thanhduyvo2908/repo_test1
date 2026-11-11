@@ -151,7 +151,7 @@ Quy tắc:
 
 - `packs/placeholder/` là gói mặc định và được commit. Nhân vật là hình khối trung tính với tên chung. Game và toàn bộ test phải chạy được chỉ với gói này.
 - `packs/onepiece/` chứa dữ liệu World 1. Sprite ưu tiên lấy từ nhân vật MUGEN do cộng đồng làm. Nhân vật không có bản MUGEN dùng được thì lấy sprite sheet rip từ game One Piece trên GBA (spritedatabase.net), rồi chỉnh tỉ lệ và bảng màu cho khớp. Nguồn từng nhân vật ghi ở `docs/characters/sprite-sources.md`. Không commit sprite và file MUGEN gốc vào git; giữ chúng trong `.gitignore`.
-- Người dùng tự tải sprite về. Claude tìm và đưa link, tác giả, điều kiện dùng lại, nhưng không tự tải file.
+- Claude tìm và đưa link, tác giả, điều kiện dùng lại. Claude chỉ tự tải file ảnh sheet (GIF, PNG) khi người dùng yêu cầu, sau khi người dùng duyệt danh sách file. File nén nhân vật MUGEN (zip, rar trên MediaFire, Mega) thì người dùng tự tải.
 - Nguồn thô đặt ở `assets-raw/<nhân-vật>/`. Nhân vật MUGEN gồm `.def`, `.sff`, `.air`, `.cmd`, `.cns` và readme của tác giả; nhân vật GBA là một file sheet `.gif` hoặc `.png`. Script trong `tools/` chuyển chúng thành atlas PNG, JSON animation và bản nháp moveset.
 - Mỗi nhân vật nhập vào có một dòng trong `CREDITS.md`: tác giả, nguồn và điều kiện dùng lại ghi trong readme.
 - Nếu các bộ sprite lệch nhau về kích thước hoặc nét vẽ, Claude được chỉnh lại sprite có sẵn: đổi tỉ lệ, căn chỉnh, đổi bảng màu.
