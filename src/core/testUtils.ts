@@ -20,6 +20,7 @@ export function skill(overrides: Partial<Skill> & Pick<Skill, "id">): Skill {
     scaling: [{ stat: "atk", weight: 1 }],
     target: "enemy",
     usage: { kind: "basic" },
+    effects: [],
     ...overrides,
   };
 }

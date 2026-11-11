@@ -373,6 +373,31 @@ p {
   transition: width 120ms linear;
 }
 
+.status-chips {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.status-chip {
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  line-height: 1.5;
+  border: 1px solid currentColor;
+}
+
+.status-chip.helpful {
+  color: var(--win);
+}
+
+.status-chip.harmful {
+  color: var(--lose);
+}
+
 .battle-log {
   list-style: none;
   margin: 12px 0 0;

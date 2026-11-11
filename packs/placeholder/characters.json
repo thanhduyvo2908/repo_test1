@@ -7,8 +7,27 @@
     "baseStats": { "hp": 90, "atk": 100, "def": 75, "spa": 40, "spd": 70, "spe": 85 },
     "passive": {
       "id": "earth-cube-passive",
-      "name": { "en": "Placeholder Passive", "vi": "Nội tại tạm" },
-      "description": { "en": "No effect yet.", "vi": "Chưa có hiệu ứng." }
+      "name": { "en": "Sturdy Shell", "vi": "Vỏ cứng" },
+      "description": {
+        "en": "Takes 20% less physical damage. The first time HP drops below 50%, restores 20% of max HP.",
+        "vi": "Nhận ít hơn 20% sát thương vật lý. Lần đầu HP xuống dưới 50%, hồi 20% HP tối đa."
+      },
+      "effects": [
+        {
+          "trigger": "battleStart",
+          "effect": {
+            "kind": "status",
+            "status": { "kind": "damageReduction", "damageType": "physical", "ratio": 0.2 },
+            "target": "self",
+            "duration": null
+          }
+        },
+        {
+          "trigger": "hpBelow",
+          "threshold": 0.5,
+          "effect": { "kind": "heal", "target": "self", "amount": { "stat": "hp", "ratio": 0.2 } }
+        }
+      ]
     },
     "basicAttack": {
       "id": "earth-cube-basic",
@@ -22,30 +41,45 @@
     "skills": [
       {
         "id": "earth-cube-s1",
-        "name": { "en": "Skill 1", "vi": "Skill 1" },
-        "description": { "en": "Placeholder skill.", "vi": "Skill tạm." },
+        "name": { "en": "Draining Slam", "vi": "Đập hút" },
+        "description": {
+          "en": "Restores HP equal to 30% of the damage dealt.",
+          "vi": "Hồi HP bằng 30% sát thương gây ra."
+        },
         "power": 60,
         "scaling": [{ "stat": "atk", "weight": 1 }],
         "target": "enemy",
-        "usage": { "kind": "cooldown", "rounds": 2 }
+        "usage": { "kind": "cooldown", "rounds": 2 },
+        "effects": [{ "kind": "lifesteal", "ratio": 0.3 }]
       },
       {
         "id": "earth-cube-s2",
-        "name": { "en": "Skill 2", "vi": "Skill 2" },
-        "description": { "en": "Placeholder skill.", "vi": "Skill tạm." },
-        "power": 80,
-        "scaling": [{ "stat": "atk", "weight": 1 }],
-        "target": "enemy",
-        "usage": { "kind": "cooldown", "rounds": 3 }
+        "name": { "en": "Bulwark", "vi": "Thành lũy" },
+        "description": {
+          "en": "Gains a shield worth 25% of max HP and taunts enemies for 2 turns.",
+          "vi": "Nhận khiên bằng 25% HP tối đa và khiêu khích địch trong 2 lượt."
+        },
+        "power": 0,
+        "scaling": [{ "stat": "hp", "weight": 1 }],
+        "target": "self",
+        "usage": { "kind": "cooldown", "rounds": 4 },
+        "effects": [
+          { "kind": "status", "status": { "kind": "shield", "amount": { "stat": "hp", "ratio": 0.25 } }, "duration": 2 },
+          { "kind": "status", "status": { "kind": "taunt" }, "duration": 2 }
+        ]
       },
       {
         "id": "earth-cube-s3",
-        "name": { "en": "Skill 3", "vi": "Skill 3" },
-        "description": { "en": "Placeholder skill.", "vi": "Skill tạm." },
+        "name": { "en": "Quake", "vi": "Động đất" },
+        "description": {
+          "en": "A heavy blow. 30% chance to stun the target for 1 turn.",
+          "vi": "Đòn nặng. 30% làm choáng mục tiêu 1 lượt."
+        },
         "power": 120,
         "scaling": [{ "stat": "atk", "weight": 1 }],
         "target": "enemy",
-        "usage": { "kind": "oncePerBattle" }
+        "usage": { "kind": "oncePerBattle" },
+        "effects": [{ "kind": "status", "status": { "kind": "stun" }, "chance": 0.3, "duration": 1 }]
       },
       {
         "id": "earth-cube-s4",

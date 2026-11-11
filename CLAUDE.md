@@ -99,6 +99,17 @@ ST = ((2 × Level / 5 + 2) × Power × A / D / 50 + 2)
 - STAB: skill cùng hệ với nhân vật được nhân thêm.
 - Khắc hệ theo mức của Pokémon: khắc thì nhân 2, bị khắc thì nhân 0,5.
 
+### Hiệu ứng trạng thái
+
+**Đề xuất**, đã có trong engine (`src/content/schema.ts`, `src/core/battle.ts`). Skill khai báo `effects`, passive khai báo `effects` kèm điều kiện kích hoạt. Mọi hiệu ứng là dữ liệu.
+
+- Khống chế: choáng (mất lượt), ngủ (mất lượt, tỉnh khi trúng đòn), câm lặng (chỉ dùng đòn đánh thường, không làm mất lượt mở đầu).
+- Sát thương theo vòng: độc, bỏng, chảy máu. Mất một tỉ lệ HP tối đa ở cuối mỗi lượt của người bị dính. Ba loại hiện chỉ khác tên.
+- Tăng giảm chỉ số theo bậc kiểu Pokémon, từ −6 đến +6, cho công, thủ, công phép, thủ phép, tốc độ. Mỗi bậc nhân (1 + 0,5 × bậc), bậc âm thì chia. Đổi tốc độ có tác dụng từ vòng sau. Hiệu ứng đổi hồi chiêu cộng hoặc trừ thời gian hồi còn lại của mọi skill có hồi chiêu.
+- Bảo vệ và hồi phục: khiên (chặn sát thương trước HP), hồi máu theo lượt, miễn trạng thái (chặn hiệu ứng xấu), khiêu khích (skill đơn mục tiêu của địch phải nhắm vào người khiêu khích), giảm sát thương nhận (theo loại hoặc mọi loại).
+- Hiệu ứng tức thời: hồi máu theo chỉ số, hút máu theo sát thương gây ra.
+- Passive kích hoạt lúc đầu trận, hoặc 1 lần mỗi trận khi HP lần đầu xuống dưới một ngưỡng.
+
 ## Item trấn phái
 
 Hoạt động giống Artifact của Epic Seven.
@@ -195,6 +206,11 @@ Dùng các giá trị này cho tới khi người dùng chốt khác:
 - Hồi chiêu giảm 1 vào cuối mỗi lượt của nhân vật, kể cả lượt bị mất do khống chế. Skill được dùng trong phần mở đầu bắt đầu hồi chiêu ngay sau khi dùng. Hồi chiêu N nghĩa là skill nghỉ đúng N lượt kế tiếp của nhân vật đó: hồi 2 thì dùng ở lượt 1, nghỉ lượt 2 và 3, dùng lại được ở lượt 4.
 - Ở màn nhỏ, nhân vật gục thì người kế tiếp vào sân ngay. Người mới vào có thể bị đánh trong vòng đó, nhưng chỉ bắt đầu hành động từ vòng sau.
 - Skill có Power 0 không gây sát thương; tác dụng của nó đến từ hiệu ứng trạng thái.
+- Thời gian hiệu ứng tính bằng lượt của người mang, giảm ở cuối mỗi lượt của họ, kể cả lượt bị mất. Hiệu ứng tự áp lên mình trong lượt của mình thì lượt đó không tính. Nên khiêu khích 2 lượt do người nhanh hơn boss tự dùng sẽ kéo được 2 đòn của boss.
+- Sát thương theo vòng và hồi máu theo lượt xảy ra ở cuối lượt của người mang, trước khi trừ thời gian.
+- Dùng lại cùng hiệu ứng từ cùng một skill thì làm mới thời gian, không cộng dồn. Hiệu ứng giống nhau từ các skill khác nhau thì cộng dồn; bậc chỉ số cộng dồn bị chặn ở ±6.
+- Skill nhắm "ally" chọn đồng minh trên sân có tỉ lệ HP thấp nhất.
+- Sự kiện sát thương trong nhật ký ghi số HP thực mất, cộng thêm phần khiên chặn.
 - Hai nhân vật cùng tốc độ thì chọn người đánh trước bằng bộ sinh số có seed.
 - Boss có bộ chỉ số riêng khai báo trong dữ liệu map, dưới dạng base stat của bản boss, rồi tính theo cùng công thức chỉ số ở level của boss. Bản chiêu mộ dùng base stat của nhân vật.
 - Chỉ số làm tròn xuống sau khi cộng hết các phần.
@@ -221,6 +237,6 @@ Dùng các giá trị này cho tới khi người dùng chốt khác:
 
 Không tự quyết các điểm sau. Hỏi người dùng khi công việc chạm tới:
 
-- Danh sách hiệu ứng trạng thái cụ thể. Claude đề xuất hiệu ứng khi soạn skill, người dùng duyệt cùng bộ skill. Đã chốt engine hỗ trợ 4 nhóm: khống chế (choáng, ngủ, câm lặng), sát thương theo vòng (độc, bỏng, chảy máu), tăng giảm chỉ số và hồi chiêu, bảo vệ và hồi phục (khiên, hồi máu theo vòng, miễn trạng thái, khiêu khích).
+- Danh sách hiệu ứng trạng thái cụ thể. Claude đề xuất hiệu ứng khi soạn skill, người dùng duyệt cùng bộ skill. Đã chốt engine hỗ trợ 4 nhóm: khống chế (choáng, ngủ, câm lặng), sát thương theo vòng (độc, bỏng, chảy máu), tăng giảm chỉ số và hồi chiêu, bảo vệ và hồi phục (khiên, hồi máu theo vòng, miễn trạng thái, khiêu khích). Engine đã có bộ hiệu ứng ở mục "Hiệu ứng trạng thái" bên dưới; danh sách đó là **Đề xuất** cho tới khi người dùng duyệt.
 - Nội dung thay đổi ở từng cấp sao của từng nhân vật. Claude đề xuất cùng bộ skill, người dùng duyệt.
 - Mechanic riêng của từng boss. Người dùng sẽ thiết kế sau; hiện tại boss chỉ có skill thường.

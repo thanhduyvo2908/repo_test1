@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { StatusSpec } from "../../content/schema";
 import type { BattleEvent, BattleResult, UnitSummary } from "../../core/battle";
+import type { StringKey, TemplateParams } from "../../i18n";
 import { runBoss, runStage } from "../../core/encounters";
 import {
   mapOrder,
@@ -10,7 +12,7 @@ import {
   type BossRewards,
 } from "../../core/progress";
 import { BackButton, ElementBadge } from "../common";
-import { skillsById, unitName } from "../content";
+import { passiveName, skillsById, unitName } from "../content";
 import { useStore } from "../store";
 
 export type BattleTarget = { mapId: string; kind: "stage"; stageIndex: number } | { mapId: string; kind: "boss" };
@@ -100,11 +102,18 @@ export function BattleScreen({ target, onBack }: { target: BattleTarget; onBack:
 
   const units = outcome?.result.units ?? [];
   const view = useMemo(() => replay(units, log.slice(0, step)), [units, log, step]);
+  const statusById = useMemo(() => {
+    const byId = new Map<number, StatusSpec>();
+    for (const event of log) if (event.type === "statusApplied") byId.set(event.statusId, event.status);
+    return byId;
+  }, [log]);
   const skills = skillsById(pack);
   const name = (uid: number) => {
     const unit = units[uid];
     return unit ? l(unitName(pack, unit)) : "?";
   };
+
+  const label = (spec: StatusSpec | undefined) => (spec ? statusLabel(spec, t) : "?");
 
   function describe(event: BattleEvent): string | null {
     switch (event.type) {
@@ -116,14 +125,47 @@ export function BattleScreen({ target, onBack }: { target: BattleTarget; onBack:
         const skill = skills.get(event.skillId);
         return t("battle.uses", { name: name(event.actor), skill: skill ? l(skill.name) : event.skillId });
       }
+      case "turnSkipped":
+        return t(event.reason === "stun" ? "battle.skippedStun" : "battle.skippedSleep", {
+          name: name(event.unit),
+        });
       case "damage": {
         const notes = [
+          event.absorbed > 0 ? t("battle.absorbed", { amount: event.absorbed }) : "",
           event.crit ? t("battle.crit") : "",
           event.effectiveness > 1 ? t("battle.strong") : "",
           event.effectiveness < 1 ? t("battle.weak") : "",
         ].filter(Boolean);
         return [t("battle.damage", { target: name(event.target), amount: event.amount }), ...notes].join(" ");
       }
+      case "dot":
+        return t("battle.dot", {
+          name: name(event.unit),
+          amount: event.amount + event.absorbed,
+          status: label(statusById.get(event.statusId)),
+        });
+      case "heal":
+        return t("battle.heal", { name: name(event.unit), amount: event.amount });
+      case "statusApplied": {
+        const status = statusLabel(event.status, t, event.shield);
+        return event.duration === null
+          ? t("battle.statusPermanent", { name: name(event.unit), status })
+          : t("battle.statusTimed", { name: name(event.unit), status, turns: event.duration });
+      }
+      case "statusResisted":
+        return t("battle.statusResisted", { name: name(event.unit), status: label(event.status) });
+      case "statusExpired":
+        return t("battle.statusExpired", {
+          name: name(event.unit),
+          status: label(statusById.get(event.statusId)),
+        });
+      case "cooldownChanged":
+        return t(event.rounds > 0 ? "battle.cooldownDelayed" : "battle.cooldownHastened", {
+          name: name(event.unit),
+          rounds: Math.abs(event.rounds),
+        });
+      case "passive":
+        return t("battle.passive", { name: name(event.unit), passive: l(passiveName(pack, event.passiveId)) });
       case "defeated":
         return t("battle.defeated", { name: name(event.unit) });
       case "battleEnd":
@@ -170,6 +212,15 @@ export function BattleScreen({ target, onBack }: { target: BattleTarget; onBack:
                     <div className="hp-bar">
                       <div className="hp-fill" style={{ width: `${(100 * hp) / u.maxHp}%` }} />
                     </div>
+                    {hp > 0 && (view.statuses[u.uid]?.size ?? 0) > 0 && (
+                      <ul className="status-chips">
+                        {[...(view.statuses[u.uid]?.values() ?? [])].map((s) => (
+                          <li key={s.id} className={`status-chip ${isHarmful(s.spec) ? "harmful" : "helpful"}`}>
+                            {statusLabel(s.spec, t, s.shield)}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </li>
                 );
               })}
@@ -272,14 +323,100 @@ function Rewards({
   );
 }
 
-/** HP per unit and who is on the field, after the given events. */
+interface ShownStatus {
+  id: number;
+  spec: StatusSpec;
+  /** Shield points left, for shields. */
+  shield: number | undefined;
+}
+
+/** HP, statuses and who is on the field, after the given events. */
 function replay(units: UnitSummary[], events: BattleEvent[]) {
   const hp = units.map((u) => u.maxHp);
   const onField = new Set<number>();
+  const statuses: Map<number, ShownStatus>[] = units.map(() => new Map());
+  const shrinkShields = (uid: number, absorbed: number) => {
+    let left = absorbed;
+    for (const s of statuses[uid]?.values() ?? []) {
+      if (s.shield === undefined || left <= 0) continue;
+      const used = Math.min(s.shield, left);
+      s.shield -= used;
+      left -= used;
+    }
+  };
   for (const event of events) {
-    if (event.type === "enter") onField.add(event.unit);
-    if (event.type === "damage") hp[event.target] = event.hpAfter;
-    if (event.type === "defeated") onField.delete(event.unit);
+    switch (event.type) {
+      case "enter":
+        onField.add(event.unit);
+        break;
+      case "damage":
+        hp[event.target] = event.hpAfter;
+        shrinkShields(event.target, event.absorbed);
+        break;
+      case "dot":
+        hp[event.unit] = event.hpAfter;
+        shrinkShields(event.unit, event.absorbed);
+        break;
+      case "heal":
+        hp[event.unit] = event.hpAfter;
+        break;
+      case "statusApplied":
+        statuses[event.unit]?.set(event.statusId, {
+          id: event.statusId,
+          spec: event.status,
+          shield: event.shield,
+        });
+        break;
+      case "statusExpired":
+        statuses[event.unit]?.delete(event.statusId);
+        break;
+      case "defeated":
+        onField.delete(event.unit);
+        statuses[event.unit]?.clear();
+        break;
+    }
   }
-  return { hp, onField };
+  return { hp, onField, statuses };
+}
+
+function isHarmful(spec: StatusSpec): boolean {
+  return (
+    spec.kind === "stun" ||
+    spec.kind === "sleep" ||
+    spec.kind === "silence" ||
+    spec.kind === "dot" ||
+    (spec.kind === "statStage" && spec.stages < 0)
+  );
+}
+
+/** Short display name of a status, e.g. "Attack +1" or "Shield 25". */
+function statusLabel(
+  spec: StatusSpec,
+  t: (key: StringKey, params?: TemplateParams) => string,
+  shield?: number,
+): string {
+  switch (spec.kind) {
+    case "stun":
+    case "sleep":
+    case "silence":
+    case "regen":
+    case "immunity":
+    case "taunt":
+      return t(`status.${spec.kind}`);
+    case "dot":
+      return t(`status.${spec.type}`);
+    case "statStage":
+      return t("status.statStage", {
+        stat: t(`stat.${spec.stat}`),
+        change: spec.stages > 0 ? `+${spec.stages}` : `−${-spec.stages}`,
+      });
+    case "shield":
+      return t("status.shield", { amount: shield ?? "" }).trim();
+    case "damageReduction": {
+      const percent = Math.round(spec.ratio * 100);
+      return spec.damageType
+        ? t("status.damageReductionTyped", { percent, type: t(`damageType.${spec.damageType}`).toLowerCase() })
+        : t("status.damageReduction", { percent });
+    }
+  }
 }

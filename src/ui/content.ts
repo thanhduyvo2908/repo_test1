@@ -10,6 +10,14 @@ export function unitName(pack: Pack, unit: Pick<UnitSummary, "kind" | "sourceId"
   return source?.name ?? { en: unit.sourceId };
 }
 
+/** Passive name by passive id. */
+export function passiveName(pack: Pack, passiveId: string): LocalizedText {
+  for (const c of pack.characters.values()) {
+    if (c.passive.id === passiveId) return c.passive.name;
+  }
+  return { en: passiveId };
+}
+
 const skillCache = new WeakMap<Pack, Map<string, Skill>>();
 
 /** Every skill in the pack by id: character, enemy and boss skills, including basic attacks. */

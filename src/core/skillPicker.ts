@@ -23,9 +23,16 @@ export class SkillPicker {
     this.spent = skills.map(() => false);
   }
 
-  /** Picks the skill for this turn and marks it used. Returns its index, or null for the basic attack. */
-  pick(): { skill: Skill; index: number | null } {
+  /**
+   * Picks the skill for this turn and marks it used. Returns its index, or null for the basic attack.
+   * A silenced unit uses its basic attack and keeps its place in the opening.
+   */
+  pick(silenced = false): { skill: Skill; index: number | null } {
     let index: number | null = null;
+    if (silenced) {
+      this.lastUsed = null;
+      return { skill: this.basicAttack, index: null };
+    }
 
     while (this.openingIndex < this.skills.length && index === null) {
       const candidate = this.openingIndex++;
@@ -59,6 +66,14 @@ export class SkillPicker {
       if (remaining > 0) this.cooldowns[i] = remaining - 1;
     }
     this.lastUsed = null;
+  }
+
+  /** Shifts every cooldown skill's remaining cooldown; positive delays, negative speeds up. */
+  adjustCooldowns(delta: number): void {
+    this.skills.forEach((skill, i) => {
+      if (skill.usage.kind !== "cooldown") return;
+      this.cooldowns[i] = Math.max(0, (this.cooldowns[i] ?? 0) + delta);
+    });
   }
 
   private isReady(index: number): boolean {

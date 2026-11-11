@@ -38,6 +38,87 @@ export const skillUsageSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("oncePerBattle") }),
 ]);
 
+// ---------------------------------------------------------------------------
+// Status effects. Four groups: control, damage over time, stat changes and cooldowns,
+// protection and recovery. Every effect is data; the engine has no per-skill code.
+
+export const DOT_TYPES = ["poison", "burn", "bleed"] as const;
+/** Stats that stat stages can change. HP is not one of them. */
+export const STAGE_STATS = ["atk", "def", "spa", "spd", "spe"] as const;
+
+/** A value computed from a stat: e.g. 25% of the caster's max HP. `hp` means max HP. */
+export const amountSchema = z.object({
+  stat: statKeySchema,
+  ratio: positive,
+  of: z.enum(["caster", "target"]).default("caster"),
+});
+
+const fractionOfMaxHp = z.number().gt(0).max(1);
+
+export const statusSpecSchema = z.discriminatedUnion("kind", [
+  // Control: the unit loses its turn (stun, sleep) or can only use its basic attack (silence).
+  // Sleep also ends when the unit takes damage from a hit.
+  z.object({ kind: z.literal("stun") }),
+  z.object({ kind: z.literal("sleep") }),
+  z.object({ kind: z.literal("silence") }),
+  // Damage over time: loses a share of max HP at the end of each of its turns.
+  z.object({ kind: z.literal("dot"), type: z.enum(DOT_TYPES), percentMaxHp: fractionOfMaxHp }),
+  // Stat changes in Pokémon-style stages (±1 to ±6).
+  z.object({
+    kind: z.literal("statStage"),
+    stat: z.enum(STAGE_STATS),
+    stages: z
+      .int()
+      .min(-6)
+      .max(6)
+      .refine((n) => n !== 0, "stages cannot be 0"),
+  }),
+  // Protection and recovery.
+  z.object({ kind: z.literal("shield"), amount: amountSchema }),
+  z.object({ kind: z.literal("regen"), percentMaxHp: fractionOfMaxHp }),
+  z.object({ kind: z.literal("immunity") }),
+  z.object({ kind: z.literal("taunt") }),
+  z.object({
+    kind: z.literal("damageReduction"),
+    damageType: damageTypeSchema.optional(),
+    ratio: z.number().gt(0).lt(1),
+  }),
+]);
+
+/** "targets" = whoever the skill targets (enemies or allies); "self" = the user. */
+const effectTargetSchema = z.enum(["targets", "self"]).default("targets");
+
+export const skillEffectSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("status"),
+    status: statusSpecSchema,
+    target: effectTargetSchema,
+    chance: probability.default(1),
+    /** In the owner's turns. null = lasts the whole battle (passives). */
+    duration: z.int().min(1).nullable(),
+  }),
+  z.object({ kind: z.literal("heal"), target: effectTargetSchema, amount: amountSchema }),
+  /** Heals the user by a share of the damage this skill dealt. */
+  z.object({ kind: z.literal("lifesteal"), ratio: positive }),
+  /** Changes the remaining cooldowns of every cooldown skill: positive delays, negative speeds up. */
+  z.object({
+    kind: z.literal("cooldown"),
+    target: effectTargetSchema,
+    rounds: z.int().refine((n) => n !== 0, "rounds cannot be 0"),
+  }),
+]);
+
+export const passiveEffectSchema = z.discriminatedUnion("trigger", [
+  /** Applied to the owner when the battle starts. */
+  z.object({ trigger: z.literal("battleStart"), effect: skillEffectSchema }),
+  /** Fires once per battle, the first time the owner's HP drops below the threshold. */
+  z.object({
+    trigger: z.literal("hpBelow"),
+    threshold: z.number().gt(0).lt(1),
+    effect: skillEffectSchema,
+  }),
+]);
+
 export const skillSchema = z.object({
   id,
   name: localizedTextSchema,
@@ -50,12 +131,14 @@ export const skillSchema = z.object({
   scaling: z.array(z.object({ stat: statKeySchema, weight: positive })).min(1),
   target: z.enum(SKILL_TARGETS),
   usage: skillUsageSchema,
+  effects: z.array(skillEffectSchema).default([]),
 });
 
 export const passiveSchema = z.object({
   id,
   name: localizedTextSchema,
   description: localizedTextSchema,
+  effects: z.array(passiveEffectSchema).default([]),
 });
 
 export const characterSchema = z.object({
@@ -179,6 +262,12 @@ export const balanceSchema = z.object({
   }),
   sideDungeon: z.object({ attemptsPerDay: z.int().min(0) }),
   offline: z.object({ maxHours: positive }),
+  status: z.object({
+    /** Stat stages are clamped to ±maxStage. */
+    maxStage: z.int().min(1),
+    /** Each stage multiplies the stat by (1 + step × n), or divides by it for negative stages. */
+    stageStep: positive,
+  }),
 });
 
 export const manifestSchema = z.object({
@@ -206,6 +295,11 @@ export type StatKey = z.infer<typeof statKeySchema>;
 export type ItemTier = z.infer<typeof itemTierSchema>;
 export type StatBlock = z.infer<typeof statBlockSchema>;
 export type Skill = z.infer<typeof skillSchema>;
+export type StatusSpec = z.infer<typeof statusSpecSchema>;
+export type SkillEffect = z.infer<typeof skillEffectSchema>;
+export type PassiveEffect = z.infer<typeof passiveEffectSchema>;
+export type Amount = z.infer<typeof amountSchema>;
+export type StageStat = (typeof STAGE_STATS)[number];
 export type Character = z.infer<typeof characterSchema>;
 export type Enemy = z.infer<typeof enemySchema>;
 export type Item = z.infer<typeof itemSchema>;

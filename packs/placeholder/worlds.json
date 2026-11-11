@@ -35,11 +35,32 @@
             {
               "id": "boss-water-sphere-wave",
               "name": { "en": "Tidal Wave", "vi": "Sóng thần" },
-              "description": { "en": "Hits the whole team.", "vi": "Đánh cả đội." },
+              "description": {
+                "en": "Hits the whole team and lowers their Speed by 1 stage for 2 turns.",
+                "vi": "Đánh cả đội và giảm 1 bậc Tốc độ trong 2 lượt."
+              },
               "power": 50,
               "scaling": [{ "stat": "spa", "weight": 1 }],
               "target": "allEnemies",
-              "usage": { "kind": "cooldown", "rounds": 3 }
+              "usage": { "kind": "cooldown", "rounds": 3 },
+              "effects": [
+                { "kind": "status", "status": { "kind": "statStage", "stat": "spe", "stages": -1 }, "duration": 2 }
+              ]
+            },
+            {
+              "id": "boss-water-sphere-bubble",
+              "name": { "en": "Bubble Veil", "vi": "Màn bong bóng" },
+              "description": {
+                "en": "Wraps itself in a shield worth 20% of max HP for 3 turns.",
+                "vi": "Bọc mình bằng khiên bằng 20% HP tối đa trong 3 lượt."
+              },
+              "power": 0,
+              "scaling": [{ "stat": "hp", "weight": 1 }],
+              "target": "self",
+              "usage": { "kind": "cooldown", "rounds": 4 },
+              "effects": [
+                { "kind": "status", "status": { "kind": "shield", "amount": { "stat": "hp", "ratio": 0.2 } }, "duration": 3 }
+              ]
             }
           ],
           "dropItemId": "sphere-shard"

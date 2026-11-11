@@ -48,6 +48,7 @@ export function buildCharacterUnit(pack: Pack, member: TeamMember): BattleUnit {
     basicAttack: character.basicAttack,
     skills,
     item,
+    passive: { id: character.passive.id, effects: character.passive.effects },
   };
 }
 

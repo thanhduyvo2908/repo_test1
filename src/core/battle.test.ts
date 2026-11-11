@@ -32,9 +32,11 @@ describe("determinism", () => {
   });
 
   it("varies with the seed", () => {
+    // A close fight, so rolls and crits change HP totals instead of being lost to overkill.
+    const close: TeamMember[] = [{ characterId: "earth-cube", level: 3 }];
     const logs = new Set(
       [1, 2, 3, 4, 5].map((seed) =>
-        JSON.stringify(runStage(pack, "training-grounds", 9, team, seed).log),
+        JSON.stringify(runStage(pack, "training-grounds", 9, close, seed).log),
       ),
     );
     expect(logs.size).toBeGreaterThan(1);

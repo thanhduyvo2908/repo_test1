@@ -34,12 +34,18 @@
     "skills": [
       {
         "id": "water-knight-s1",
-        "name": { "en": "Heavy Slash", "vi": "Chém mạnh" },
-        "description": { "en": "Placeholder skill.", "vi": "Skill tạm." },
+        "name": { "en": "Rending Slash", "vi": "Chém rách" },
+        "description": {
+          "en": "Makes the target bleed: loses 5% of max HP each turn for 2 turns.",
+          "vi": "Gây chảy máu: mất 5% HP tối đa mỗi lượt trong 2 lượt."
+        },
         "power": 60,
         "scaling": [{ "stat": "atk", "weight": 1 }],
         "target": "enemy",
-        "usage": { "kind": "cooldown", "rounds": 3 }
+        "usage": { "kind": "cooldown", "rounds": 3 },
+        "effects": [
+          { "kind": "status", "status": { "kind": "dot", "type": "bleed", "percentMaxHp": 0.05 }, "duration": 2 }
+        ]
       }
     ]
   }

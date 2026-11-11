@@ -45,5 +45,6 @@
     "dustForLegendary": 50
   },
   "sideDungeon": { "attemptsPerDay": 3 },
-  "offline": { "maxHours": 8 }
+  "offline": { "maxHours": 8 },
+  "status": { "maxStage": 6, "stageStep": 0.5 }
 }
