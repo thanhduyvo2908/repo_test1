@@ -1,0 +1,46 @@
+[
+  {
+    "id": "water-pawn",
+    "name": { "en": "Water Pawn", "vi": "Tốt Thủy" },
+    "element": "water",
+    "damageType": "physical",
+    "baseStats": { "hp": 50, "atk": 60, "def": 50, "spa": 30, "spd": 40, "spe": 50 },
+    "basicAttack": {
+      "id": "water-pawn-basic",
+      "name": { "en": "Jab", "vi": "Đấm" },
+      "description": { "en": "A basic attack.", "vi": "Đòn đánh thường." },
+      "power": 40,
+      "scaling": [{ "stat": "atk", "weight": 1 }],
+      "target": "enemy",
+      "usage": { "kind": "basic" }
+    },
+    "skills": []
+  },
+  {
+    "id": "water-knight",
+    "name": { "en": "Water Knight", "vi": "Mã Thủy" },
+    "element": "water",
+    "damageType": "physical",
+    "baseStats": { "hp": 65, "atk": 75, "def": 65, "spa": 30, "spd": 50, "spe": 55 },
+    "basicAttack": {
+      "id": "water-knight-basic",
+      "name": { "en": "Slash", "vi": "Chém" },
+      "description": { "en": "A basic attack.", "vi": "Đòn đánh thường." },
+      "power": 40,
+      "scaling": [{ "stat": "atk", "weight": 1 }],
+      "target": "enemy",
+      "usage": { "kind": "basic" }
+    },
+    "skills": [
+      {
+        "id": "water-knight-s1",
+        "name": { "en": "Heavy Slash", "vi": "Chém mạnh" },
+        "description": { "en": "Placeholder skill.", "vi": "Skill tạm." },
+        "power": 60,
+        "scaling": [{ "stat": "atk", "weight": 1 }],
+        "target": "enemy",
+        "usage": { "kind": "cooldown", "rounds": 3 }
+      }
+    ]
+  }
+]

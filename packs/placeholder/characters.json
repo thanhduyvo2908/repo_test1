@@ -1,0 +1,113 @@
+[
+  {
+    "id": "earth-cube",
+    "name": { "en": "Earth Cube", "vi": "Khối Thổ" },
+    "element": "earth",
+    "damageType": "physical",
+    "baseStats": { "hp": 90, "atk": 100, "def": 75, "spa": 40, "spd": 70, "spe": 85 },
+    "passive": {
+      "id": "earth-cube-passive",
+      "name": { "en": "Placeholder Passive", "vi": "Nội tại tạm" },
+      "description": { "en": "No effect yet.", "vi": "Chưa có hiệu ứng." }
+    },
+    "basicAttack": {
+      "id": "earth-cube-basic",
+      "name": { "en": "Strike", "vi": "Đánh thường" },
+      "description": { "en": "A basic attack.", "vi": "Đòn đánh thường." },
+      "power": 40,
+      "scaling": [{ "stat": "atk", "weight": 1 }],
+      "target": "enemy",
+      "usage": { "kind": "basic" }
+    },
+    "skills": [
+      {
+        "id": "earth-cube-s1",
+        "name": { "en": "Skill 1", "vi": "Skill 1" },
+        "description": { "en": "Placeholder skill.", "vi": "Skill tạm." },
+        "power": 60,
+        "scaling": [{ "stat": "atk", "weight": 1 }],
+        "target": "enemy",
+        "usage": { "kind": "cooldown", "rounds": 2 }
+      },
+      {
+        "id": "earth-cube-s2",
+        "name": { "en": "Skill 2", "vi": "Skill 2" },
+        "description": { "en": "Placeholder skill.", "vi": "Skill tạm." },
+        "power": 80,
+        "scaling": [{ "stat": "atk", "weight": 1 }],
+        "target": "enemy",
+        "usage": { "kind": "cooldown", "rounds": 3 }
+      },
+      {
+        "id": "earth-cube-s3",
+        "name": { "en": "Skill 3", "vi": "Skill 3" },
+        "description": { "en": "Placeholder skill.", "vi": "Skill tạm." },
+        "power": 120,
+        "scaling": [{ "stat": "atk", "weight": 1 }],
+        "target": "enemy",
+        "usage": { "kind": "oncePerBattle" }
+      },
+      {
+        "id": "earth-cube-s4",
+        "name": { "en": "Skill 4", "vi": "Skill 4" },
+        "description": { "en": "Placeholder skill.", "vi": "Skill tạm." },
+        "power": 150,
+        "scaling": [{ "stat": "atk", "weight": 1 }],
+        "target": "enemy",
+        "usage": { "kind": "oncePerBattle" }
+      }
+    ],
+    "itemId": "cube-core"
+  },
+  {
+    "id": "water-sphere",
+    "name": { "en": "Water Sphere", "vi": "Cầu Thủy" },
+    "element": "water",
+    "damageType": "magic",
+    "baseStats": { "hp": 80, "atk": 40, "def": 70, "spa": 100, "spd": 85, "spe": 75 },
+    "passive": {
+      "id": "water-sphere-passive",
+      "name": { "en": "Placeholder Passive", "vi": "Nội tại tạm" },
+      "description": { "en": "No effect yet.", "vi": "Chưa có hiệu ứng." }
+    },
+    "basicAttack": {
+      "id": "water-sphere-basic",
+      "name": { "en": "Splash", "vi": "Té nước" },
+      "description": { "en": "A basic attack.", "vi": "Đòn đánh thường." },
+      "power": 40,
+      "scaling": [{ "stat": "spa", "weight": 1 }],
+      "target": "enemy",
+      "usage": { "kind": "basic" }
+    },
+    "skills": [
+      {
+        "id": "water-sphere-s1",
+        "name": { "en": "Skill 1", "vi": "Skill 1" },
+        "description": { "en": "Placeholder skill.", "vi": "Skill tạm." },
+        "power": 60,
+        "scaling": [{ "stat": "spa", "weight": 1 }],
+        "target": "enemy",
+        "usage": { "kind": "cooldown", "rounds": 2 }
+      },
+      {
+        "id": "water-sphere-s2",
+        "name": { "en": "Skill 2", "vi": "Skill 2" },
+        "description": { "en": "Placeholder skill.", "vi": "Skill tạm." },
+        "power": 80,
+        "scaling": [{ "stat": "spa", "weight": 1 }],
+        "target": "enemy",
+        "usage": { "kind": "cooldown", "rounds": 3 }
+      },
+      {
+        "id": "water-sphere-s3",
+        "name": { "en": "Skill 3", "vi": "Skill 3" },
+        "description": { "en": "Placeholder skill.", "vi": "Skill tạm." },
+        "power": 120,
+        "scaling": [{ "stat": "spa", "weight": 1 }],
+        "target": "enemy",
+        "usage": { "kind": "oncePerBattle" }
+      }
+    ],
+    "itemId": "sphere-shard"
+  }
+]

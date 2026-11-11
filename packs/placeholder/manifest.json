@@ -1,0 +1,8 @@
+{
+  "id": "placeholder",
+  "name": { "en": "Placeholder Pack", "vi": "Gói tạm" },
+  "starterCharacterId": "earth-cube",
+  "worldCompletionRewards": [
+    { "worldId": "training", "itemId": "cube-core", "tier": "legendary" }
+  ]
+}

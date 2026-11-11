@@ -1,0 +1,50 @@
+[
+  {
+    "id": "training",
+    "name": { "en": "Training World", "vi": "Thế giới luyện tập" },
+    "maps": [
+      {
+        "id": "training-grounds",
+        "name": { "en": "Training Grounds", "vi": "Bãi luyện tập" },
+        "stages": [
+          { "enemies": [{ "enemyId": "water-pawn", "level": 1 }] },
+          { "enemies": [{ "enemyId": "water-pawn", "level": 1 }] },
+          { "enemies": [{ "enemyId": "water-pawn", "level": 1 }, { "enemyId": "water-pawn", "level": 1 }] },
+          { "enemies": [{ "enemyId": "water-pawn", "level": 2 }, { "enemyId": "water-pawn", "level": 2 }] },
+          { "enemies": [{ "enemyId": "water-pawn", "level": 2 }, { "enemyId": "water-pawn", "level": 2 }, { "enemyId": "water-knight", "level": 2 }] },
+          { "enemies": [{ "enemyId": "water-pawn", "level": 2 }, { "enemyId": "water-pawn", "level": 2 }, { "enemyId": "water-knight", "level": 2 }] },
+          { "enemies": [{ "enemyId": "water-pawn", "level": 2 }, { "enemyId": "water-pawn", "level": 2 }, { "enemyId": "water-pawn", "level": 3 }, { "enemyId": "water-knight", "level": 3 }] },
+          { "enemies": [{ "enemyId": "water-pawn", "level": 3 }, { "enemyId": "water-pawn", "level": 3 }, { "enemyId": "water-knight", "level": 3 }, { "enemyId": "water-knight", "level": 3 }] },
+          { "enemies": [{ "enemyId": "water-pawn", "level": 3 }, { "enemyId": "water-pawn", "level": 3 }, { "enemyId": "water-pawn", "level": 3 }, { "enemyId": "water-knight", "level": 3 }, { "enemyId": "water-knight", "level": 3 }] },
+          { "enemies": [{ "enemyId": "water-pawn", "level": 3 }, { "enemyId": "water-pawn", "level": 3 }, { "enemyId": "water-knight", "level": 3 }, { "enemyId": "water-knight", "level": 3 }, { "enemyId": "water-knight", "level": 3 }] }
+        ],
+        "boss": {
+          "characterId": "water-sphere",
+          "level": 3,
+          "baseStats": { "hp": 250, "atk": 40, "def": 80, "spa": 90, "spd": 90, "spe": 60 },
+          "basicAttack": {
+            "id": "boss-water-sphere-basic",
+            "name": { "en": "Splash", "vi": "Té nước" },
+            "description": { "en": "A basic attack.", "vi": "Đòn đánh thường." },
+            "power": 40,
+            "scaling": [{ "stat": "spa", "weight": 1 }],
+            "target": "enemy",
+            "usage": { "kind": "basic" }
+          },
+          "skills": [
+            {
+              "id": "boss-water-sphere-wave",
+              "name": { "en": "Tidal Wave", "vi": "Sóng thần" },
+              "description": { "en": "Hits the whole team.", "vi": "Đánh cả đội." },
+              "power": 50,
+              "scaling": [{ "stat": "spa", "weight": 1 }],
+              "target": "allEnemies",
+              "usage": { "kind": "cooldown", "rounds": 3 }
+            }
+          ],
+          "dropItemId": "sphere-shard"
+        }
+      }
+    ]
+  }
+]

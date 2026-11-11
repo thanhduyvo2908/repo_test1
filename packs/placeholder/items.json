@@ -1,0 +1,30 @@
+[
+  {
+    "id": "cube-core",
+    "name": { "en": "Cube Core", "vi": "Lõi Khối" },
+    "description": {
+      "en": "Raises physical damage of Earth skills.",
+      "vi": "Tăng sát thương vật lý của skill hệ Thổ."
+    },
+    "ownerId": "earth-cube",
+    "effect": {
+      "kind": "damageBonus",
+      "condition": { "element": "earth", "damageType": "physical" },
+      "valueByTier": { "common": 0.05, "rare": 0.1, "epic": 0.2, "legendary": 0.3 }
+    }
+  },
+  {
+    "id": "sphere-shard",
+    "name": { "en": "Sphere Shard", "vi": "Mảnh Cầu" },
+    "description": {
+      "en": "Raises magic damage of Water skills.",
+      "vi": "Tăng sát thương phép của skill hệ Thủy."
+    },
+    "ownerId": "water-sphere",
+    "effect": {
+      "kind": "damageBonus",
+      "condition": { "element": "water", "damageType": "magic" },
+      "valueByTier": { "common": 0.05, "rare": 0.1, "epic": 0.2, "legendary": 0.3 }
+    }
+  }
+]

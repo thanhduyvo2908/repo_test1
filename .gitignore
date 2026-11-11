@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+*.log
+.DS_Store
+
+# Raw MUGEN sources and generated sprites are never committed (see CLAUDE.md).
+assets-raw/
+packs/onepiece/assets/
+tools/out/
