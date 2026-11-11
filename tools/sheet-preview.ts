@@ -13,10 +13,10 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { decodeGif } from './mugen/gif';
-import { decodePng, encodePngRgba } from './mugen/png';
+import { encodePngRgba } from './mugen/png';
+import { loadImage } from './sheet/image';
 import { crop, findBackground, removeBackground, sliceSheet } from './sheet/slice';
-import type { Box, Image } from './sheet/slice';
+import type { Box } from './sheet/slice';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -53,23 +53,6 @@ function parseArgs(argv: string[]): Options {
     process.exit(1);
   }
   return opts;
-}
-
-function loadImage(path: string): Image {
-  const bytes = new Uint8Array(readFileSync(path));
-  const ext = extname(path).toLowerCase();
-  if (ext === '.gif') return decodeGif(bytes);
-  const png = decodePng(bytes);
-  if (png.rgba) return { width: png.width, height: png.height, rgba: png.rgba };
-  const rgba = new Uint8Array(png.width * png.height * 4);
-  const pal = png.palette;
-  (png.indices ?? new Uint8Array(0)).forEach((idx, i) => {
-    rgba[i * 4] = pal?.[idx * 3] ?? 0;
-    rgba[i * 4 + 1] = pal?.[idx * 3 + 1] ?? 0;
-    rgba[i * 4 + 2] = pal?.[idx * 3 + 2] ?? 0;
-    rgba[i * 4 + 3] = 255;
-  });
-  return { width: png.width, height: png.height, rgba };
 }
 
 const esc = (s: string): string => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c);

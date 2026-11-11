@@ -5,12 +5,14 @@ import { DEFAULT_LANG, LANGUAGES, type Lang } from "../i18n";
 
 // Versioned save file. Bump SAVE_VERSION and add a migration whenever the shape changes.
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 export interface SaveData {
   version: typeof SAVE_VERSION;
   settings: {
     lang: Lang;
+    /** After a mini stage win, move on to the next stage instead of repeating. */
+    autoAdvance: boolean;
   };
   /** null until the first game starts. */
   game: GameState | null;
@@ -56,6 +58,11 @@ export const migrations: Record<number, (save: RawSave) => RawSave> = {
       },
     };
   },
+  // v3 → v4: auto-advance setting for mini stages, off by default.
+  3: (save) => {
+    const settings = (save.settings as Record<string, unknown> | undefined) ?? {};
+    return { ...save, version: 4, settings: { ...settings, autoAdvance: false } };
+  },
 };
 
 const count = z.int().min(0);
@@ -88,12 +95,15 @@ const gameStateSchema = z.object({
 
 const saveSchema = z.object({
   version: z.literal(SAVE_VERSION),
-  settings: z.object({ lang: z.enum(LANGUAGES).catch(DEFAULT_LANG) }),
+  settings: z.object({
+    lang: z.enum(LANGUAGES).catch(DEFAULT_LANG),
+    autoAdvance: z.boolean().catch(false),
+  }),
   game: gameStateSchema.nullable().catch(null),
 });
 
 export function createDefaultSave(): SaveData {
-  return { version: SAVE_VERSION, settings: { lang: DEFAULT_LANG }, game: null };
+  return { version: SAVE_VERSION, settings: { lang: DEFAULT_LANG, autoAdvance: false }, game: null };
 }
 
 function migrate(save: RawSave): RawSave | null {

@@ -3,10 +3,13 @@
 //   npm run sim                      every stage and boss of every map, starter alone
 //   npm run sim -- --runs 500        more seeds per fight
 //   npm run sim -- --levels 1,3,5    team levels to try
+//   npm run sim -- --pack onepiece   another content pack
+//   npm run sim -- --map <id>        one map only
+//   npm run sim -- --bosses          boss fights only
 import { loadPack } from "../src/content/loader";
 import type { BattleResult } from "../src/core/battle";
 import { runBoss, runStage, type TeamMember } from "../src/core/encounters";
-import { placeholderPackData } from "../packs/placeholder";
+import { DEFAULT_PACK, packLoaders } from "../packs";
 
 function arg(name: string): string | undefined {
   const index = process.argv.indexOf(`--${name}`);
@@ -16,7 +19,12 @@ function arg(name: string): string | undefined {
 const runs = Number(arg("runs") ?? 200);
 const levels = (arg("levels") ?? "1,3,5,10").split(",").map(Number);
 
-const pack = loadPack(placeholderPackData);
+const packId = arg("pack") ?? DEFAULT_PACK;
+const loadData = packLoaders[packId];
+if (!loadData) throw new Error(`Unknown pack "${packId}". Known: ${Object.keys(packLoaders).join(", ")}`);
+const pack = loadPack(await loadData());
+const onlyMap = arg("map");
+const bossesOnly = process.argv.includes("--bosses");
 const starter = pack.manifest.starterCharacterId;
 
 interface Summary {
@@ -53,12 +61,13 @@ const pct = (x: number) => `${Math.round(x * 100)}%`.padStart(5);
 console.log(`Pack "${pack.manifest.id}", ${runs} runs per fight, team: ${starter} alone.\n`);
 
 for (const map of pack.maps.values()) {
-  console.log(`== ${map.id} ==`);
+  if (onlyMap && map.id !== onlyMap) continue;
+  console.log(`== ${map.id} (boss Lv ${map.boss.level}) ==`);
   console.log(`${"fight".padEnd(10)}${levels.map((l) => `Lv ${l}`.padStart(22)).join("")}`);
   console.log(`${"".padEnd(10)}${levels.map(() => "win  rounds  hpLeft".padStart(22)).join("")}`);
 
   const fights: [string, (team: TeamMember[], seed: number) => BattleResult][] = [
-    ...map.stages.map(
+    ...(bossesOnly ? [] : map.stages).map(
       (_, i) =>
         [`stage ${i + 1}`, (team: TeamMember[], seed: number) => runStage(pack, map.id, i, team, seed)] as [
           string,

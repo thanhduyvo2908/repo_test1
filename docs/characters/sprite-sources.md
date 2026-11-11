@@ -11,16 +11,23 @@ Trang Sprite Database chỉ cho dùng riêng tư hoặc phi thương mại. Mỗ
 
 ## Quyết định của người dùng
 
-Ưu tiên MUGEN; nhân vật nào thiếu bản MUGEN dùng được thì lấy sheet GBA đắp vào, đổi tỉ lệ và bảng màu cho khớp.
+Ưu tiên MUGEN; nhân vật nào thiếu bản MUGEN dùng được thì lấy sheet GBA đắp vào, đổi tỉ lệ và bảng màu cho khớp. Thiếu khung thì Claude vẽ bổ sung (luật trong `CLAUDE.md`).
 
-| Nhân vật | Nguồn chọn | Thư mục `assets-raw/` | Tình trạng |
+Bảng thống kê đầy đủ, gồm từng ô hoạt ảnh còn thiếu: `docs/sprite-status.xlsx`. Tạo lại bằng `npm run sprite:inventory` rồi `npm run sprite:report`; nguồn chọn cho từng nhân vật khai báo ở `tools/sprite-plan.ts`.
+
+**Đề xuất** nguồn chọn, sau khi tải bản V14 ngày 11/11/2026. Phần lớn nhân vật East Blue trong V14 do Mikel8888 làm theo nét Jump Ultimate Stars, cùng một bộ nên nét vẽ đồng đều; chiều cao sprite 47 đến 78 px, gần cỡ GBA.
+
+| Nhân vật | Nguồn chọn | Thư mục `assets-raw/` | Ghi chú |
 | --- | --- | --- | --- |
-| Luffy, Zoro, Nami, Sanji | MUGEN: JUS gốc hoặc Gigant Battle, chọn sau khi so sánh | `luffy-jus`, `luffy-gb`, ... | Chưa tải |
-| Buggy, Usopp, Kuro | MUGEN: Gigant Battle | `buggy-gb`, `usopp-gb`, `kuro-gb` | Chưa tải |
-| Don Krieg | MUGEN của edd13; nếu bản này hỏng hoặc thiếu đòn thì dùng GBA | `krieg`, dự phòng `krieg-gba` | Bản MUGEN chưa tải; sheet GBA đã tải |
-| Alvida | GBA | `alvida-gba` | Đã tải 2 sheet |
-| Morgan | GBA | `morgan-gba` | Đã tải |
-| Cabaji | GBA | `cabaji-gba` | Đã tải, thiếu hoạt ảnh (xem dưới) |
+| Luffy | MUGEN, Mikel8888 | `op14/chars/Luffy_Start` | Dự phòng: `op14/chars/LuffyGB` (Gigant Battle) |
+| Zoro | MUGEN, Mikel8888 | `op14/chars/Zoro_JUS` | |
+| Nami | MUGEN, InSeph | `op14/chars/Nami` | Người dùng chọn ngày 11/11/2026. Dự phòng: `Nami enies lobby` của Mikel8888 |
+| Sanji | MUGEN, Mikel8888 | `op14/chars/Sanji_V2/Sanji_V2` | |
+| Buggy, Usopp, Kuro | MUGEN, Mikel8888 | `op14/chars/Buggy`, `Usopp`, `Kuro` | |
+| Morgan | MUGEN, Justin kaiser | `op14/chars/Morgan_JUS` | Dự phòng: `morgan-gba` |
+| Don Krieg | MUGEN, Mikel8888 | `op14/chars/Krieg` | Dự phòng: `krieg-edd13`, `krieg-gba` |
+| Alvida | GBA | `alvida-gba` | Vẽ bổ sung chân dung |
+| Cabaji | GBA, sheet của Paddy | `cabaji-gba/Cabaji-paddy.png` | Vẽ bổ sung đứng yên, trúng đòn, đòn cho skill, chân dung |
 | Jango | GBA | `jango-gba` | Đã tải |
 | Gin | GBA | `gin-gba` | Đã tải, thiếu ảnh chân dung |
 | Hải tặc, lính hải quân, đầu bếp | GBA | `pirate-gba`, `marine-gba`, `npc-gba` | Đã tải |

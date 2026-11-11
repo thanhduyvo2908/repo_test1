@@ -1,0 +1,14 @@
+{
+  "sheets": {
+    "MarineSword.gif": {
+      "gap": 0,
+      "slots": {
+        "idle": { "frames": [0, 1], "ticks": 12 },
+        "basic": { "frames": [7, 8, 9, 10], "ticks": 6 },
+        "s1": { "frames": [11, 12], "ticks": 8 },
+        "hit": { "frames": [21, 22], "ticks": 8 },
+        "ko": { "frames": [22, 25, 26, 27], "ticks": 8 }
+      }
+    }
+  }
+}

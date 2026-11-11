@@ -99,6 +99,22 @@ export function createNewGame(pack: Pack, seed: number): GameState {
   };
 }
 
+/**
+ * A new game for demos: every character owned at the first world's level cap, the first five in
+ * the team with the starter in front.
+ */
+export function createDemoGame(pack: Pack, seed: number): GameState {
+  const base = createNewGame(pack, seed);
+  const level = pack.balance.worlds[pack.worlds[0]?.id ?? ""]?.levelCap ?? 1;
+  const starter = pack.manifest.starterCharacterId;
+  const ids = [starter, ...[...pack.characters.keys()].filter((id) => id !== starter)];
+  return {
+    ...base,
+    roster: ids.map((id) => newOwnedCharacter(id, level)),
+    team: ids.slice(0, MAX_TEAM_SIZE),
+  };
+}
+
 export function findOwned(state: GameState, characterId: string): OwnedCharacter | undefined {
   return state.roster.find((c) => c.characterId === characterId);
 }
@@ -155,7 +171,7 @@ export function mapProgress(state: GameState, mapId: string): MapProgress {
 /** The first map is always open; each later map opens when the previous boss falls for the first time. */
 export function isMapUnlocked(state: GameState, pack: Pack, mapId: string): boolean {
   const entry = requireEntry(pack, mapId);
-  if (entry.index === 0) return true;
+  if (entry.index === 0 || pack.demo) return true;
   const previous = mapOrder(pack)[entry.index - 1];
   return previous ? mapProgress(state, previous.map.id).bossDefeated : false;
 }
@@ -166,6 +182,7 @@ export function isStageUnlocked(
   mapId: string,
   stageIndex: number,
 ): boolean {
+  if (pack.demo) return true;
   return (
     isMapUnlocked(state, pack, mapId) && stageIndex <= mapProgress(state, mapId).stagesCleared
   );
@@ -174,6 +191,7 @@ export function isStageUnlocked(
 /** The boss opens once every stage of the map is cleared. */
 export function isBossUnlocked(state: GameState, pack: Pack, mapId: string): boolean {
   const { map } = requireEntry(pack, mapId);
+  if (pack.demo) return true;
   return (
     isMapUnlocked(state, pack, mapId) &&
     mapProgress(state, mapId).stagesCleared >= map.stages.length

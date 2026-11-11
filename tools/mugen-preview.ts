@@ -6,16 +6,14 @@
 //
 // Output: tools/out/preview/<id>/[<def>/]index.html, sprites/*.png and moves.json.
 // tools/out/ is git-ignored because it contains sprites.
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, extname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseAir, totalTicks } from './mugen/air';
+import { totalTicks } from './mugen/air';
 import type { AirAction } from './mugen/air';
-import { findSection, getValue, parseIni, unquote } from './mugen/ini';
+import { findCharacterDefs, loadCharacter } from './mugen/character';
 import { encodePngRgba } from './mugen/png';
-import { readAct, readSff } from './mugen/sff';
 import type { Sff } from './mugen/sff';
-import { analyzeMoves, parseStates } from './mugen/states';
 import type { MoveInfo } from './mugen/states';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -40,30 +38,6 @@ function parseArgs(argv: string[]): Options {
   }
   return opts;
 }
-
-function findDefs(dir: string, depth = 3): string[] {
-  const out: string[] = [];
-  for (const name of readdirSync(dir)) {
-    const p = join(dir, name);
-    const st = statSync(p);
-    if (st.isDirectory() && depth > 0 && name !== '_preview') out.push(...findDefs(p, depth - 1));
-    else if (st.isFile() && extname(name).toLowerCase() === '.def') out.push(p);
-  }
-  return out;
-}
-
-/** Resolves a path written in a .def file, tolerating wrong folders and letter case. */
-function resolveCharFile(defDir: string, value: string | undefined): string | undefined {
-  const v = unquote(value)?.trim();
-  if (!v) return undefined;
-  const direct = resolve(defDir, v);
-  if (existsSync(direct) && statSync(direct).isFile()) return direct;
-  const base = basename(v.replace(/\\/g, '/')).toLowerCase();
-  const hit = readdirSync(defDir).find((n) => n.toLowerCase() === base);
-  return hit ? join(defDir, hit) : undefined;
-}
-
-const readText = (p: string): string => readFileSync(p, 'latin1');
 
 const STANDARD_ACTIONS: Record<number, string> = {
   0: 'Đứng yên',
@@ -119,26 +93,7 @@ function actionBounds(action: AirAction, sff: Sff): Bounds | undefined {
 const esc = (s: string): string => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c);
 
 function buildPreview(defPath: string, outDir: string, scale: number): void {
-  const defDir = dirname(defPath);
-  const def = parseIni(readText(defPath));
-  const info = findSection(def, 'Info');
-  const files = findSection(def, 'Files');
-  if (!files) throw new Error(`${defPath}: missing [Files]`);
-  const file = (k: string) => resolveCharFile(defDir, getValue(files, k));
-  const sffPath = file('sprite');
-  const airPath = file('anim');
-  const cmdPath = file('cmd');
-  if (!sffPath || !airPath) throw new Error(`${defPath}: sprite or anim file not found`);
-  const stateKeys = ['cns', 'st', ...Array.from({ length: 10 }, (_, i) => `st${i}`), 'stcommon'];
-  const statePaths = [...new Set(stateKeys.map(file).filter((p): p is string => p !== undefined))];
-  const missingStateFiles = stateKeys.filter((k) => getValue(files, k) && !file(k)).map((k) => `${k} = ${getValue(files, k)}`);
-
-  const actPath = file('pal1');
-  const sff = readSff(readFileSync(sffPath), actPath ? readAct(readFileSync(actPath)) : undefined);
-  const air = parseAir(readText(airPath));
-  const cmdText = cmdPath ? readText(cmdPath) : '';
-  const states = parseStates([cmdText, ...statePaths.map(readText)]);
-  const moves = analyzeMoves(cmdText, states, (id) => air.has(id));
+  const { sff, air, moves, missingStateFiles, name, author, readmes } = loadCharacter(defPath);
 
   // Sprites to export: every frame of every action, plus portraits.
   mkdirSync(join(outDir, 'sprites'), { recursive: true });
@@ -186,9 +141,6 @@ function buildPreview(defPath: string, outDir: string, scale: number): void {
     JSON.stringify({ def: relative(ROOT, defPath), sffVersion: sff.version, moves, missingSprites: Object.fromEntries(missingSprites) }, null, 2),
   );
 
-  const name = unquote(info && getValue(info, 'displayname')) ?? unquote(info && getValue(info, 'name')) ?? basename(defPath);
-  const author = unquote(info && getValue(info, 'author')) ?? '?';
-  const readmes = readdirSync(defDir).filter((n) => /readme|leeme|\.txt$/i.test(n));
 
   const animCard = (id: number, label = ''): string => {
     const a = air.get(id);
@@ -299,7 +251,7 @@ function main(): void {
     console.error(`Not found: ${opts.target} (also tried assets-raw/${opts.target})`);
     process.exit(1);
   }
-  const defs = statSync(target).isDirectory() ? findDefs(target) : [target];
+  const defs = statSync(target).isDirectory() ? findCharacterDefs(target) : [target];
   if (defs.length === 0) {
     console.error(`No .def file under ${target}`);
     process.exit(1);

@@ -25,7 +25,7 @@ function tabOf(screen: Screen): Tab {
 }
 
 export function App() {
-  const { t, lang, setLang } = useStore();
+  const { t, lang, setLang, pack } = useStore();
   const [screen, setScreen] = useState<Screen>({ name: "maps" });
   const tab = tabOf(screen);
 
@@ -54,6 +54,7 @@ export function App() {
         </label>
       </header>
 
+      {pack.demo && <p className="demo-banner small">{t("app.demo")}</p>}
       <ResourceBar />
 
       <nav className="tabs">
@@ -91,6 +92,11 @@ export function App() {
             key={JSON.stringify(screen.target)}
             target={screen.target}
             onBack={() => setScreen(backFromBattle(screen.target))}
+            onAdvance={(stageIndex) => {
+              const current = screen.target;
+              if (current.kind === "dungeon") return;
+              setScreen({ name: "battle", target: { kind: "stage", mapId: current.mapId, stageIndex } });
+            }}
           />
         )}
         {screen.name === "team" && (

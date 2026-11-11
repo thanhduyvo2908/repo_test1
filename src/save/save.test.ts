@@ -21,13 +21,13 @@ function memoryStorage(): SaveStorage {
 
 describe("save", () => {
   it("starts in English with no game", () => {
-    expect(createDefaultSave()).toEqual({ version: SAVE_VERSION, settings: { lang: "en" }, game: null });
+    expect(createDefaultSave()).toEqual({ version: SAVE_VERSION, settings: { lang: "en", autoAdvance: false }, game: null });
   });
 
   it("round-trips settings and game state", () => {
     const storage = memoryStorage();
     const game = createNewGame(pack, 1234);
-    writeSave(storage, { version: SAVE_VERSION, settings: { lang: "vi" }, game });
+    writeSave(storage, { version: SAVE_VERSION, settings: { lang: "vi", autoAdvance: false }, game });
     const loaded = loadSave(storage);
     expect(loaded.settings.lang).toBe("vi");
     expect(loaded.game).toEqual(game);
@@ -43,22 +43,22 @@ describe("save", () => {
 
   it("ignores an unknown language but keeps the game", () => {
     const game = createNewGame(pack, 1);
-    const text = serializeSave({ version: SAVE_VERSION, settings: { lang: "fr" as "en" }, game });
+    const text = serializeSave({ version: SAVE_VERSION, settings: { lang: "fr" as "en", autoAdvance: false }, game });
     const loaded = deserializeSave(text);
     expect(loaded.settings.lang).toBe("en");
     expect(loaded.game).toEqual(game);
   });
 
   it("drops a damaged game section but keeps the language", () => {
-    const text = JSON.stringify({ version: SAVE_VERSION, settings: { lang: "vi" }, game: { seed: "x" } });
-    expect(deserializeSave(text)).toEqual({ version: SAVE_VERSION, settings: { lang: "vi" }, game: null });
+    const text = JSON.stringify({ version: SAVE_VERSION, settings: { lang: "vi", autoAdvance: false }, game: { seed: "x" } });
+    expect(deserializeSave(text)).toEqual({ version: SAVE_VERSION, settings: { lang: "vi", autoAdvance: false }, game: null });
   });
 });
 
 describe("migrations", () => {
   it("upgrades a v1 save (settings only) with no game", () => {
     const v1 = JSON.stringify({ version: 1, settings: { lang: "vi" } });
-    expect(deserializeSave(v1)).toEqual({ version: SAVE_VERSION, settings: { lang: "vi" }, game: null });
+    expect(deserializeSave(v1)).toEqual({ version: SAVE_VERSION, settings: { lang: "vi", autoAdvance: false }, game: null });
   });
 
   it("upgrades a v2 save: keeps progress, adds growth fields and empty resources", () => {
@@ -106,6 +106,21 @@ describe("migrations", () => {
 
   it("upgrades a v2 save with no game", () => {
     const v2 = JSON.stringify({ version: 2, settings: { lang: "vi" }, game: null });
-    expect(deserializeSave(v2)).toEqual({ version: SAVE_VERSION, settings: { lang: "vi" }, game: null });
+    expect(deserializeSave(v2)).toEqual({ version: SAVE_VERSION, settings: { lang: "vi", autoAdvance: false }, game: null });
+  });
+
+  it("upgrades a v3 save: keeps the game, adds auto-advance off", () => {
+    const game = createNewGame(pack, 5);
+    const v3 = JSON.stringify({ version: 3, settings: { lang: "vi" }, game });
+    expect(deserializeSave(v3)).toEqual({
+      version: SAVE_VERSION,
+      settings: { lang: "vi", autoAdvance: false },
+      game,
+    });
+  });
+
+  it("round-trips auto-advance", () => {
+    const text = serializeSave({ version: SAVE_VERSION, settings: { lang: "en", autoAdvance: true }, game: null });
+    expect(deserializeSave(text).settings.autoAdvance).toBe(true);
   });
 });

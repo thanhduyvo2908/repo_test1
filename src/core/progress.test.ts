@@ -179,3 +179,28 @@ describe("sanitize", () => {
     expect(fixed.items).toEqual([]);
   });
 });
+
+describe("demo pack", () => {
+  it("opens every map, stage and boss and unlocks every skill at level 1", async () => {
+    const { toDemoPack } = await import("../content/loader");
+    const { buildCharacterUnit } = await import("./encounters");
+    const demo = toDemoPack(pack);
+    const state = createNewGame(demo, 1);
+    expect(isMapUnlocked(state, demo, MAP)).toBe(true);
+    expect(isStageUnlocked(state, demo, MAP, STAGES - 1)).toBe(true);
+    expect(isBossUnlocked(state, demo, MAP)).toBe(true);
+    const unit = buildCharacterUnit(demo, { characterId: "earth-cube", level: 1 });
+    expect(unit.skills).toHaveLength(4);
+    // The real pack is untouched.
+    expect(isBossUnlocked(createNewGame(pack, 1), pack, MAP)).toBe(false);
+  });
+
+  it("starts with every character at the level cap, starter first", async () => {
+    const { toDemoPack } = await import("../content/loader");
+    const { createDemoGame } = await import("./progress");
+    const game = createDemoGame(toDemoPack(pack), 1);
+    expect(game.roster.map((c) => c.characterId)).toEqual(["earth-cube", "water-sphere"]);
+    expect(game.roster.every((c) => c.level === 30)).toBe(true);
+    expect(game.team[0]).toBe("earth-cube");
+  });
+});

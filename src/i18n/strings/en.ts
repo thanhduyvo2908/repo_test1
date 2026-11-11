@@ -3,6 +3,7 @@
 export const en = {
   "app.title": "Xidle",
   "app.tagline": "Idle crossover adventure",
+  "app.demo": "Demo mode: every map and skill is open. Progress here is saved separately.",
 
   "settings.language": "Language",
   "lang.en": "English",
@@ -91,6 +92,8 @@ export const en = {
   "battle.retry": "Fight again",
   "battle.stop": "Stop",
   "battle.repeating": "Next battle starting…",
+  "battle.autoAdvance": "Auto-advance to the next stage",
+  "battle.advancing": "Moving on to the next stage…",
   "battle.wins": "Wins this session: {count}",
 
   "rewards.title": "Rewards",

@@ -538,3 +538,31 @@ section.card h3 {
 .dialog h2 {
   margin-top: 0;
 }
+
+.battle-canvas {
+  width: 100%;
+  height: 220px;
+  margin-top: 8px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.battle-canvas canvas {
+  display: block;
+}
+
+.demo-banner {
+  margin: 8px 0 0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent);
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}

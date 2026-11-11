@@ -1,10 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { StatusSpec } from "../../content/schema";
 import type { BattleEvent, BattleResult, UnitSummary } from "../../core/battle";
-import type { StringKey, TemplateParams } from "../../i18n";
+import type { CanvasUnit } from "../BattleCanvas";
+import { elementColor } from "../sceneColors";
+import { isHarmful, statusLabel } from "../statusText";
 import { canEnterDungeon, recordDungeonResult } from "../../core/dungeons";
 import { runBoss, runSideDungeon, runStage } from "../../core/encounters";
 import {
+  isStageUnlocked,
   mapOrder,
   recordBossVictory,
   recordStageResult,
@@ -15,8 +18,11 @@ import {
   type Resources,
 } from "../../core/progress";
 import { BackButton, ElementBadge } from "../common";
-import { passiveName, skillsById, unitName } from "../content";
+import { animKeyFor, passiveName, skillsById, unitName } from "../content";
 import { todayKey, useStore } from "../store";
+
+// PixiJS is large, so the scene loads only when a battle opens.
+const BattleCanvas = lazy(() => import("../BattleCanvas").then((m) => ({ default: m.BattleCanvas })));
 
 export type BattleTarget =
   | { kind: "stage"; mapId: string; stageIndex: number }
@@ -35,13 +41,24 @@ interface Outcome {
 }
 
 const STEP_MS = 160;
+/** Actions wait longer so sprite attack animations have time to play. */
+const ACTION_MS = 420;
 const ROUND_MS = 60;
 const REPEAT_DELAY_MS = 1200;
 const LOG_LINES = 8;
 
 /** Plays back a battle log. Stages repeat automatically until the player stops or loses. */
-export function BattleScreen({ target, onBack }: { target: BattleTarget; onBack: () => void }) {
-  const { pack, updateGame, t, l, n } = useStore();
+export function BattleScreen({
+  target,
+  onBack,
+  onAdvance,
+}: {
+  target: BattleTarget;
+  onBack: () => void;
+  /** Opens another stage of the same map (auto-advance). */
+  onAdvance: (stageIndex: number) => void;
+}) {
+  const { pack, game, updateGame, t, l, n, autoAdvance, setAutoAdvance } = useStore();
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [step, setStep] = useState(0);
   const [repeat, setRepeat] = useState(true);
@@ -114,7 +131,7 @@ export function BattleScreen({ target, onBack }: { target: BattleTarget; onBack:
   useEffect(() => {
     if (!outcome || done) return;
     const event = log[step];
-    const timer = setTimeout(() => setStep((s) => s + 1), event?.type === "roundStart" ? ROUND_MS : STEP_MS);
+    const timer = setTimeout(() => setStep((s) => s + 1), event?.type === "roundStart" ? ROUND_MS : event?.type === "action" ? ACTION_MS : STEP_MS);
     return () => clearTimeout(timer);
   }, [outcome, done, log, step]);
 
@@ -126,11 +143,22 @@ export function BattleScreen({ target, onBack }: { target: BattleTarget; onBack:
     counted.current = outcome;
     setWins((w) => w + 1);
   }, [won, outcome]);
+  // The next stage of this map, if auto-advance should move there after a win.
+  const nextStage =
+    target.kind === "stage" &&
+    autoAdvance &&
+    target.stageIndex + 1 < (pack.maps.get(target.mapId)?.stages.length ?? 0) &&
+    isStageUnlocked(game, pack, target.mapId, target.stageIndex + 1)
+      ? target.stageIndex + 1
+      : null;
   useEffect(() => {
     if (!won || target.kind !== "stage" || !repeat) return;
-    const timer = setTimeout(start, REPEAT_DELAY_MS);
+    const timer = setTimeout(() => {
+      if (nextStage !== null) onAdvance(nextStage);
+      else start();
+    }, REPEAT_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [won, repeat, start, target.kind]);
+  }, [won, repeat, start, target.kind, nextStage, onAdvance]);
 
   const units = outcome?.result.units ?? [];
   const view = useMemo(() => replay(units, log.slice(0, step)), [units, log, step]);
@@ -146,6 +174,25 @@ export function BattleScreen({ target, onBack }: { target: BattleTarget; onBack:
   };
 
   const label = (spec: StatusSpec | undefined) => (spec ? statusLabel(spec, t) : "?");
+
+  // Units for the PixiJS scene. A new array per battle tells the scene to reset.
+  const sceneUnits = useMemo<CanvasUnit[]>(
+    () =>
+      units.map((u) => {
+        const source = u.kind === "enemy" ? pack.enemies.get(u.sourceId) : pack.characters.get(u.sourceId);
+        return {
+          uid: u.uid,
+          side: u.side,
+          kind: u.kind,
+          maxHp: u.maxHp,
+          sourceId: u.sourceId,
+          label: l(unitName(pack, u)),
+          color: elementColor(source?.element ?? "metal"),
+        };
+      }),
+    // Labels follow the language at battle start; the scene resets every battle.
+    [units],
+  );
 
   function describe(event: BattleEvent): string | null {
     switch (event.type) {
@@ -224,11 +271,40 @@ export function BattleScreen({ target, onBack }: { target: BattleTarget; onBack:
     <>
       <BackButton onClick={onBack} />
       <h2>{title}</h2>
-      {target.kind === "stage" && <p className="small muted">{t("battle.wins", { count: wins })}</p>}
+      {target.kind === "stage" && (
+        <div className="row small">
+          <span className="muted">{t("battle.wins", { count: wins })}</span>
+          <label className="toggle push-right">
+            <input
+              type="checkbox"
+              checked={autoAdvance}
+              onChange={(event) => setAutoAdvance(event.target.checked)}
+            />
+            {t("battle.autoAdvance")}
+          </label>
+        </div>
+      )}
       {blocked && (
         <p className="error small" role="alert">
           {t("dungeon.noAttempts")}
         </p>
+      )}
+
+      {outcome && (
+        <Suspense fallback={<div className="battle-canvas" />}>
+          <BattleCanvas
+            packId={pack.manifest.id}
+            units={sceneUnits}
+            animFor={(uid, skillId) => {
+              const unit = units[uid];
+              return unit ? animKeyFor(pack, unit, skillId) : "basic";
+            }}
+            log={log}
+            step={step}
+            state={view}
+            statusLabel={(event) => (isHarmful(event.status) ? statusLabel(event.status, t, event.shield) : "")}
+          />
+        </Suspense>
       )}
 
       <div className="battle-field">
@@ -301,7 +377,7 @@ export function BattleScreen({ target, onBack }: { target: BattleTarget; onBack:
           )}
           {target.kind === "stage" && won && repeat ? (
             <>
-              <p className="small muted">{t("battle.repeating")}</p>
+              <p className="small muted">{nextStage !== null ? t("battle.advancing") : t("battle.repeating")}</p>
               <button type="button" className="secondary-button" onClick={() => setRepeat(false)}>
                 {t("battle.stop")}
               </button>
@@ -426,44 +502,3 @@ function replay(units: UnitSummary[], events: BattleEvent[]) {
   return { hp, onField, statuses };
 }
 
-function isHarmful(spec: StatusSpec): boolean {
-  return (
-    spec.kind === "stun" ||
-    spec.kind === "sleep" ||
-    spec.kind === "silence" ||
-    spec.kind === "dot" ||
-    (spec.kind === "statStage" && spec.stages < 0)
-  );
-}
-
-/** Short display name of a status, e.g. "Attack +1" or "Shield 25". */
-function statusLabel(
-  spec: StatusSpec,
-  t: (key: StringKey, params?: TemplateParams) => string,
-  shield?: number,
-): string {
-  switch (spec.kind) {
-    case "stun":
-    case "sleep":
-    case "silence":
-    case "regen":
-    case "immunity":
-    case "taunt":
-      return t(`status.${spec.kind}`);
-    case "dot":
-      return t(`status.${spec.type}`);
-    case "statStage":
-      return t("status.statStage", {
-        stat: t(`stat.${spec.stat}`),
-        change: spec.stages > 0 ? `+${spec.stages}` : `−${-spec.stages}`,
-      });
-    case "shield":
-      return t("status.shield", { amount: shield ?? "" }).trim();
-    case "damageReduction": {
-      const percent = Math.round(spec.ratio * 100);
-      return spec.damageType
-        ? t("status.damageReductionTyped", { percent, type: t(`damageType.${spec.damageType}`).toLowerCase() })
-        : t("status.damageReduction", { percent });
-    }
-  }
-}

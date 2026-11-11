@@ -1,0 +1,8 @@
+{
+  "id": "onepiece",
+  "name": { "en": "One Piece", "vi": "One Piece" },
+  "starterCharacterId": "luffy",
+  "worldCompletionRewards": [
+    { "worldId": "east-blue", "itemId": "straw-hat", "tier": "legendary" }
+  ]
+}

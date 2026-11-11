@@ -28,10 +28,23 @@ Nguồn: [Sprite Database, One Piece (GBA)](https://spritedatabase.net/game/1089
 | Mohji và Richie | Croix | [spritedatabase.net/file/4048](https://spritedatabase.net/file/4048) | Ghi công nếu dùng |
 | Sham và Buchi (Nyaban Brothers) | Croix | [spritedatabase.net/file/4051](https://spritedatabase.net/file/4051) | Ghi công nếu dùng |
 | Pearl | harsh29 | [spritedatabase.net/file/4054](https://spritedatabase.net/file/4054) | Ghi công nếu dùng |
+| Cabaji (sheet thứ hai, có icon mặt) | Paddy | Người dùng tải, sheet "Game Boy Advance - One Piece - Enemies - Cabaji" | Không cần ghi công |
 
 ## Nhân vật MUGEN
 
+Tác giả lấy từ dòng `author` trong file `.def`. Các nhân vật dưới đây không kèm readme, nên không có điều kiện dùng lại được ghi rõ; dự án phi thương mại và ghi công tác giả.
+
 | Nhân vật | Tác giả | Nguồn | Điều kiện dùng lại |
 | --- | --- | --- | --- |
+| Luffy (`Luffy_Start`) | Mikel8888 | One Piece Mugen V14 (Dark Night Mugen) | Không ghi |
+| Zoro (`Zoro_JUS`) | Mikel8888 | One Piece Mugen V14 | Không ghi |
+| Morgan (`Morgan_JUS`) | Justin kaiser | One Piece Mugen V14 | Không ghi |
+| Nami (`Nami`) | InSeph | One Piece Mugen V14 | Không ghi |
+| Buggy (`Buggy`) | Mikel8888 | One Piece Mugen V14 | Không ghi; có file moveset |
+| Usopp (`Usopp`) | Mikel8888 | One Piece Mugen V14 | Không ghi |
+| Kuro (`Kuro`) | Mikel8888 | One Piece Mugen V14 | Không ghi |
+| Sanji (`Sanji_V2`) | Mikel8888 | One Piece Mugen V14 | Không ghi |
+| Don Krieg (`Krieg`) | Mikel8888 | One Piece Mugen V14 | Không ghi |
+| Don Krieg (dự phòng, `krieg-edd13`) | edd13, sprite gốc của vbc | [Mugen Free For All](https://mugenfreeforall.com/topic/26450-don-krieg-by-edd13-released-dec-27-2015/) | Không ghi; `.def` để trống tác giả |
 
-Chưa tải bộ MUGEN nào.
+Toàn bộ 201 nhân vật của bản V14 nằm trong `assets-raw/op14/chars/`; tác giả từng nhân vật xem trang "Tất cả MUGEN" của `docs/sprite-status.xlsx`. Nhân vật nào được nhập vào `packs/` thì thêm một dòng vào bảng trên.

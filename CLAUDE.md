@@ -161,7 +161,7 @@ Quy tắc:
 ## Gói nội dung và asset
 
 - `packs/placeholder/` là gói mặc định và được commit. Nhân vật là hình khối trung tính với tên chung. Game và toàn bộ test phải chạy được chỉ với gói này.
-- `packs/onepiece/` chứa dữ liệu World 1. Sprite ưu tiên lấy từ nhân vật MUGEN do cộng đồng làm. Nhân vật không có bản MUGEN dùng được thì lấy sprite sheet rip từ game One Piece trên GBA (spritedatabase.net), rồi chỉnh tỉ lệ và bảng màu cho khớp. Nguồn từng nhân vật ghi ở `docs/characters/sprite-sources.md`. Không commit sprite và file MUGEN gốc vào git; giữ chúng trong `.gitignore`.
+- `packs/onepiece/` chứa dữ liệu World 1, viết bằng module TypeScript (`characters.ts`, `enemies.ts`, `items.ts`, `worlds.ts`, `sideDungeons.ts`) để sinh màn nhỏ và skill placeholder bằng hàm nhỏ; số cân bằng chung vẫn ở `balance.json`. Dữ liệu này được commit, sprite thì không. Danh sách gói ở `packs/index.ts`. Sprite ưu tiên lấy từ nhân vật MUGEN do cộng đồng làm. Nhân vật không có bản MUGEN dùng được thì lấy sprite sheet rip từ game One Piece trên GBA (spritedatabase.net), rồi chỉnh tỉ lệ và bảng màu cho khớp. Nguồn từng nhân vật ghi ở `docs/characters/sprite-sources.md`. Không commit sprite và file MUGEN gốc vào git; giữ chúng trong `.gitignore`.
 - Claude tìm và đưa link, tác giả, điều kiện dùng lại. Claude chỉ tự tải file ảnh sheet (GIF, PNG) khi người dùng yêu cầu, sau khi người dùng duyệt danh sách file. File nén nhân vật MUGEN (zip, rar trên MediaFire, Mega) thì người dùng tự tải.
 - Nguồn thô đặt ở `assets-raw/<nhân-vật>/`. Nhân vật MUGEN gồm `.def`, `.sff`, `.air`, `.cmd`, `.cns` và readme của tác giả; nhân vật GBA là một file sheet `.gif` hoặc `.png`. Script trong `tools/` chuyển chúng thành atlas PNG, JSON animation và bản nháp moveset.
 - Mỗi nhân vật nhập vào có một dòng trong `CREDITS.md`: tác giả, nguồn và điều kiện dùng lại ghi trong readme.
@@ -172,10 +172,10 @@ Quy tắc:
 
 Repo khởi tạo ngày 11/11/2026, dùng Node 26, TypeScript 7, Vite 8, React 19, Vitest 5 và zod 4 cho schema.
 
-- `npm run dev`: chạy bản phát triển. `.claude/launch.json` có cấu hình `dev` ở cổng 5173 để mở trong trình duyệt của app.
+- `npm run dev`: chạy bản phát triển. `.claude/launch.json` có cấu hình `dev` ở cổng 5173 để mở trong trình duyệt của app. Mặc định chạy gói placeholder; thêm `?pack=onepiece` vào URL (hoặc đặt biến `VITE_PACK`) để chạy World 1. Mỗi gói có file lưu riêng. Thêm `&demo=1` để bật chế độ demo: mở hết map, màn, boss và skill (mốc mở skill về level 1), game mới có sẵn mọi nhân vật ở level tối đa, file lưu riêng. Chế độ demo chỉ để thử và trình diễn; luật chơi thật không đổi.
 - `npm test`: chạy Vitest
 - `npm run typecheck`
-- `npm run sim`: mô phỏng hàng loạt trận để kiểm tra cân bằng. Cho nhân vật khởi đầu đánh một mình mọi màn và boss của mọi map, in tỉ lệ thắng, số vòng và HP còn lại theo từng level. Tùy chọn: `-- --runs 500`, `-- --levels 1,3,5`.
+- `npm run sim`: mô phỏng hàng loạt trận để kiểm tra cân bằng. Cho nhân vật khởi đầu đánh một mình mọi màn và boss của mọi map, in tỉ lệ thắng, số vòng và HP còn lại theo từng level. Tùy chọn: `-- --runs 500`, `-- --levels 1,3,5`, `-- --pack onepiece`, `-- --map <id>`, `-- --bosses`.
 - `npm run build`
 
 Node và Git được cài bằng winget sau khi app đã chạy, nên shell của app có thể chưa có chúng trong PATH. Nếu `node` hoặc `git` báo không tìm thấy, chạy dòng này trong cùng lệnh: `$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')`.
@@ -220,7 +220,7 @@ Dùng các giá trị này cho tới khi người dùng chốt khác:
 - Boss dùng bộ skill riêng khai báo trong dữ liệu map, không theo mốc level của người chơi.
 - Trong trận boss, boss đánh nhân vật đứng đầu còn sống theo thứ tự đội hình, trừ khi skill ghi khác.
 - Ải phụ đánh theo kiểu trận boss, 5 đấu 1.
-- Màn nhỏ tự lặp lại cho tới khi người chơi đổi màn hoặc đội thua.
+- Màn nhỏ tự lặp lại cho tới khi người chơi đổi màn hoặc đội thua. Người chơi bật "Tự động qua màn" (lưu trong cài đặt của file lưu, mặc định tắt) thì thắng xong chuyển sang màn kế tiếp đã mở; ở màn cuối của map thì lặp lại màn đó.
 - Đầu mỗi màn nhỏ cả đội hồi đầy máu. Trong một màn, máu giữ nguyên khi chuyển từ lính này sang lính kế tiếp.
 - Màn nhỏ giới hạn 100 vòng; quá giới hạn thì tính là thua.
 - Skill placeholder: đòn đánh thường Power 40; S1 Power 60, hồi 2 vòng; S2 Power 80, hồi 3 vòng; S3 Power 120; S4 Power 150.

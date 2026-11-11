@@ -161,7 +161,8 @@ export const characterSchema = z.object({
   basicAttack: skillSchema,
   /** Slot order: S1, S2, S3, S4. Unlock levels live in the balance config. */
   skills: z.array(skillSchema).min(1).max(4),
-  itemId: id,
+  /** The character's own item. Optional: some characters have none yet. */
+  itemId: id.optional(),
   /** Star levels above 1★, in order: index 0 is 2★. Each one adds on top of the previous. */
   stars: z.array(starLevelSchema).default([]),
 });
@@ -356,3 +357,5 @@ export type SideDungeon = z.infer<typeof sideDungeonSchema>;
 export type Balance = z.infer<typeof balanceSchema>;
 export type Manifest = z.infer<typeof manifestSchema>;
 export type RawPack = z.infer<typeof rawPackSchema>;
+/** Pack data as authored, before defaults are filled in. Packs written in TypeScript use this. */
+export type PackInput = z.input<typeof rawPackSchema>;

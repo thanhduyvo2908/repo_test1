@@ -1,0 +1,59 @@
+{
+  "stats": {
+    "pointsPerLevel": 3,
+    "maxPointsPerStatPerLevel": 1,
+    "pointValue": { "hp": 1, "other": 0.5 }
+  },
+  "skills": {
+    "unlockLevels": [1, 20, 30, 50]
+  },
+  "damage": {
+    "critChance": 0.041667,
+    "critMultiplier": 1.5,
+    "randomMin": 0.85,
+    "randomMax": 1,
+    "stab": 1.5,
+    "multiTarget": 0.75,
+    "minDamage": 1
+  },
+  "elementChart": [
+    { "attacker": "metal", "defender": "wood", "multiplier": 2 },
+    { "attacker": "wood", "defender": "earth", "multiplier": 2 },
+    { "attacker": "earth", "defender": "water", "multiplier": 2 },
+    { "attacker": "water", "defender": "fire", "multiplier": 2 },
+    { "attacker": "fire", "defender": "metal", "multiplier": 2 },
+    { "attacker": "wood", "defender": "metal", "multiplier": 0.5 },
+    { "attacker": "earth", "defender": "wood", "multiplier": 0.5 },
+    { "attacker": "water", "defender": "earth", "multiplier": 0.5 },
+    { "attacker": "fire", "defender": "water", "multiplier": 0.5 },
+    { "attacker": "metal", "defender": "fire", "multiplier": 0.5 },
+    { "attacker": "light", "defender": "dark", "multiplier": 2 },
+    { "attacker": "dark", "defender": "light", "multiplier": 2 }
+  ],
+  "rounds": {
+    "stage": 100,
+    "boss": 30,
+    "sideDungeon": 30
+  },
+  "worlds": {
+    "east-blue": { "levelCap": 30, "recruitRate": 0.2 }
+  },
+  "drops": {
+    "itemDropChance": 0.5,
+    "tierWeights": { "common": 60, "rare": 28, "epic": 10, "legendary": 2 },
+    "dustPerTier": { "common": 1, "rare": 2, "epic": 5, "legendary": 10 },
+    "dustForLegendary": 50
+  },
+  "sideDungeon": { "attemptsPerDay": 3 },
+  "offline": { "maxHours": 8, "battlesPerHour": 120, "minMinutes": 1 },
+  "economy": {
+    "stageReward": { "goldPerEnemyLevel": 5, "foodPerEnemyLevel": 3 },
+    "bossRewardMultiplier": 10,
+    "levelCost": {
+      "gold": { "base": 20, "exponent": 1.6 },
+      "food": { "base": 10, "exponent": 1.6 }
+    }
+  },
+  "stars": { "materialCost": [10, 30, 60, 100, 150] },
+  "status": { "maxStage": 6, "stageStep": 0.5 }
+}

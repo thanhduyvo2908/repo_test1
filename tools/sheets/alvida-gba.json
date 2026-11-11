@@ -1,0 +1,17 @@
+{
+  "sheets": {
+    "Alvida.gif": {
+      "gap": 3,
+      "slots": {
+        "idle": { "frames": [21, 22, 23, 24], "ticks": 10 },
+        "basic": { "frames": [9, 10, 11], "ticks": 6 },
+        "s1": { "frames": [12, 13, 14], "ticks": 7 },
+        "s2": { "frames": [15, 16, 17], "ticks": 7 },
+        "s3": { "frames": [18, 19, 20], "ticks": 8 },
+        "hit": { "frames": [25, 26], "ticks": 8 },
+        "ko": { "frames": [27, 28, 29, 30, 31, 32], "ticks": 8 },
+        "portrait": { "frames": [7] }
+      }
+    }
+  }
+}

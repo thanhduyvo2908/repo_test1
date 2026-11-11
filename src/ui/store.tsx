@@ -11,6 +11,7 @@ import {
 import type { Pack } from "../content/loader";
 import { claimOfflineReward, markSeen, type OfflineReward } from "../core/offline";
 import {
+  createDemoGame,
   createNewGame,
   sanitizeGameState,
   type ActionError,
@@ -30,6 +31,9 @@ interface StoreValue {
   runAction: (action: (game: GameState) => ActionResult) => ActionError | null;
   lang: Lang;
   setLang: (lang: Lang) => void;
+  /** After a stage win, move on to the next stage instead of repeating. */
+  autoAdvance: boolean;
+  setAutoAdvance: (on: boolean) => void;
   t: (key: StringKey, params?: TemplateParams) => string;
   l: (text: LocalizedText) => string;
   /** Formats a number with the active language's digit grouping. */
@@ -49,6 +53,11 @@ function freshSeed(): number {
   return Math.floor(Math.random() * 0x1_0000_0000);
 }
 
+/** A new game: the demo build starts with every character. */
+function startGame(pack: Pack, seed: number): GameState {
+  return pack.demo ? createDemoGame(pack, seed) : createNewGame(pack, seed);
+}
+
 /** Today's calendar day in the player's time zone, used for daily side dungeon limits. */
 export function todayKey(): string {
   const d = new Date();
@@ -58,7 +67,7 @@ export function todayKey(): string {
 
 function initialSave(storage: SaveStorage, pack: Pack): { save: SaveData; offline: OfflineReward | null } {
   const save = loadSave(storage);
-  const game = save.game ? sanitizeGameState(save.game, pack) : createNewGame(pack, freshSeed());
+  const game = save.game ? sanitizeGameState(save.game, pack) : startGame(pack, freshSeed());
   const claimed = claimOfflineReward(game, pack, Date.now());
   const ready = { ...save, game: claimed.state };
   writeSave(storage, ready);
@@ -92,7 +101,7 @@ export function StoreProvider({
   const updateGame = useCallback(
     (change: (game: GameState) => GameState) => {
       const current = latest.current;
-      const game = change(current.game ?? createNewGame(pack, freshSeed()));
+      const game = change(current.game ?? startGame(pack, freshSeed()));
       commit({ ...current, game });
       return game;
     },
@@ -115,6 +124,14 @@ export function StoreProvider({
     (lang: Lang) => {
       const current = latest.current;
       commit({ ...current, settings: { ...current.settings, lang } });
+    },
+    [commit],
+  );
+
+  const setAutoAdvance = useCallback(
+    (autoAdvance: boolean) => {
+      const current = latest.current;
+      commit({ ...current, settings: { ...current.settings, autoAdvance } });
     },
     [commit],
   );
@@ -142,17 +159,19 @@ export function StoreProvider({
       n: (value) => numberFormat.format(value),
       pack,
       save,
-      game: save.game ?? createNewGame(pack, 0),
+      game: save.game ?? startGame(pack, 0),
       updateGame,
       runAction,
       lang,
       setLang,
+      autoAdvance: save.settings.autoAdvance,
+      setAutoAdvance,
       t: (key, params) => translate(lang, key, params),
       l: (text) => localize(text, lang),
       offlineReward,
       dismissOfflineReward: () => setOfflineReward(null),
     };
-  }, [pack, save, updateGame, runAction, setLang, offlineReward]);
+  }, [pack, save, updateGame, runAction, setLang, setAutoAdvance, offlineReward]);
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }

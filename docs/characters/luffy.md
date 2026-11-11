@@ -44,19 +44,19 @@ Chỉ số thực tế, chưa cộng điểm tự nâng:
 
 ## Hoạt ảnh
 
-Chờ sprite. Khi người dùng tải bộ JUS và Gigant Battle vào `assets-raw/luffy-jus/` và `assets-raw/luffy-gb/`, chạy `npm run mugen:preview -- luffy-jus` (và `luffy-gb`), mở `tools/out/preview/<id>/index.html`, rồi điền bảng này. Cột "Cần tìm" là đòn mà bản thiết kế skill bên dưới giả định; nếu bộ sprite không có đòn đó, đổi skill theo đòn có sẵn.
+Bộ sprite: `Luffy_Start` của Mikel8888, trong One Piece Mugen V14 (`assets-raw/op14/chars/Luffy_Start/`). Ô hoạt ảnh khai báo trong `tools/sprite-export-config.ts`; xuất bằng `npm run sprite:export -- luffy`.
 
-| Ô | Cần tìm | Bộ sprite | Action | State / lệnh | Ghi chú |
-| --- | --- | --- | --- | --- | --- |
-| Đứng yên | Thế đứng thủ | Chờ | Thường là 0 | | |
-| Đòn đánh thường | Cú đấm hoặc đá nhanh | Chờ | | | |
-| S1 | Gomu Gomu no Pistol: tay vươn dài đấm thẳng | Chờ | | | |
-| S2 | Gomu Gomu no Fusen: thân phồng thành bóng | Chờ | | | Nếu không có Fusen: dùng thế thủ, đòn đỡ, hoặc đòn Gatling và đổi S2 sang tấn công |
-| S3 | Gomu Gomu no Bazooka: hai tay đẩy mạnh | Chờ | | | |
-| S4 | Thuộc World sau | | | | |
-| Trúng đòn | | Chờ | Thường là 5000 | | |
-| Gục | | Chờ | Thường là 5140 hoặc 5150 | | |
-| Chân dung | | Chờ | Sprite 9000,0 hoặc 9000,1 | | |
+| Ô | Cần tìm | Action | Tình trạng |
+| --- | --- | --- | --- |
+| Đứng yên | Thế đứng thủ | 0 | Tự chọn |
+| Đòn đánh thường | Cú đấm hoặc đá nhanh | 200 | Tự chọn, chưa xem kỹ |
+| S1 | Gomu Gomu no Pistol: tay vươn dài đấm thẳng | 1500, khung 11 đến 21 | Người dùng yêu cầu ngày 12/11/2026: đấm thẳng, không đấm chéo. Action 1500 mở đầu bằng Gatling (khung 0 đến 10), kết thúc bằng một cú Pistol thẳng ngang; chỉ lấy phần Pistol. Action 1000 (lựa chọn tự động cũ) đấm chéo lên trên |
+| S2 | Gomu Gomu no Fusen: thân phồng thành bóng | 1100 | Đúng hoạt ảnh Fusen |
+| S3 | Gomu Gomu no Bazooka: hai tay đẩy mạnh | 3000 | Siêu chiêu tự chọn, chưa xác nhận là Bazooka |
+| S4 | Thuộc World sau | | Dự kiến: Gatling, khung 0 đến 10 của action 1500 |
+| Trúng đòn | | 5000 | Tự chọn |
+| Gục | | 5150 | Tự chọn |
+| Chân dung | | Cắt phần đầu khung đứng yên | Bản V14 thay sprite 9000,1 bằng cả màn hình chọn nhân vật |
 
 Tránh chọn đòn bị trang xem trước gắn nhãn ĐÒN VẬT hoặc HIỆU ỨNG FIGHTFX.
 

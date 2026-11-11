@@ -4,6 +4,7 @@ import type { StringKey } from "./en";
 export const vi: Partial<Record<StringKey, string>> = {
   "app.title": "Xidle",
   "app.tagline": "Phiêu lưu crossover tự động",
+  "app.demo": "Chế độ demo: mở hết map và skill. Tiến trình ở đây được lưu riêng.",
 
   "settings.language": "Ngôn ngữ",
   "lang.en": "English",
@@ -92,6 +93,8 @@ export const vi: Partial<Record<StringKey, string>> = {
   "battle.retry": "Đánh lại",
   "battle.stop": "Dừng",
   "battle.repeating": "Sắp vào trận tiếp…",
+  "battle.autoAdvance": "Tự động qua màn kế tiếp",
+  "battle.advancing": "Sắp sang màn kế tiếp…",
   "battle.wins": "Số trận thắng: {count}",
 
   "rewards.title": "Phần thưởng",

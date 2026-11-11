@@ -19,6 +19,17 @@ export interface Pack {
   worlds: readonly World[];
   maps: ReadonlyMap<string, GameMap>;
   sideDungeons: ReadonlyMap<string, SideDungeon>;
+  /** Demo build: every map, stage and boss is open. Never set by pack data, only by `toDemoPack`. */
+  demo?: boolean;
+}
+
+/**
+ * A copy of a pack for demos and testing: all skills unlock at level 1 and every map is open.
+ * Balance numbers are otherwise unchanged.
+ */
+export function toDemoPack(pack: Pack): Pack {
+  const unlockLevels = pack.balance.skills.unlockLevels.map(() => 1);
+  return { ...pack, balance: { ...pack.balance, skills: { ...pack.balance.skills, unlockLevels } }, demo: true };
 }
 
 export class PackError extends Error {
@@ -72,7 +83,7 @@ export function loadPack(input: unknown): Pack {
   }
 
   for (const character of characters.values()) {
-    if (!items.has(character.itemId)) {
+    if (character.itemId && !items.has(character.itemId)) {
       issues.push(`character "${character.id}" has unknown item "${character.itemId}"`);
     }
     if (character.basicAttack.usage.kind !== "basic") {

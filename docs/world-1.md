@@ -56,7 +56,9 @@ Bộ skill của Luffy và 12 boss do người dùng thiết kế sau. Không t�
 
 ## Nhân vật, hệ và item
 
-Hệ và tên item là **đề xuất**. Riêng hệ Thổ của Luffy lấy từ ví dụ của người dùng. Hiệu ứng của từng item chưa thiết kế; khi thiết kế, theo mẫu trong `CLAUDE.md`: hiệu ứng gắn với hệ và loại sát thương của nhân vật chủ.
+Hệ trong bảng đã được người dùng duyệt ngày 11/11/2026. Tên item là **đề xuất**.
+
+Item, chốt ngày 11/11/2026: trước mắt chỉ làm item cho thành viên băng Mũ Rơm đã xuất hiện trong World 1, tức Luffy, Zoro, Nami, Usopp, Sanji. Các boss phản diện (Alvida, Morgan, Cabaji, Buggy, Jango, Kuro, Gin, Don Krieg) tạm thời không rơi item; sẽ mở rộng sau. **Đề xuất** hiệu ứng theo mẫu trong `CLAUDE.md`: tăng sát thương cho skill cùng hệ và cùng loại sát thương với nhân vật chủ, theo bậc 5%, 10%, 20%, 30%.
 
 | Nhân vật | Nguồn | Chiêu mộ | Hệ | Item (EN) | Item (VI) | Sprite (tình trạng ngày 11/11/2026; chi tiết ở `docs/characters/sprite-sources.md`) |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -114,8 +116,37 @@ Lính chỉ là kẻ địch, cần bộ sprite rút gọn: đứng yên, 2 đò
 
 Hỏi người dùng khi công việc chạm tới:
 
-- Thứ tự boss trong mỗi arc. Phương án khác: thành viên băng Mũ Rơm đứng cuối arc, khi đó map 12 là Sanji.
-- Hệ của từng nhân vật.
-- Lính của map 7. Trong truyện, băng Mèo Đen chưa xuất hiện lúc gặp Usopp.
 - Bộ skill của 13 nhân vật, thay đổi ở từng cấp sao và mechanic riêng của từng boss. Người dùng thiết kế sau.
-- Hiệu ứng cụ thể của 13 item.
+- Item của 8 boss phản diện: sẽ mở rộng sau.
+
+Đã chốt ngày 11/11/2026: giữ thứ tự boss như bảng 12 map (thành viên Mũ Rơm đứng đầu arc), giữ hệ như bảng nhân vật, lính map 7 là Thám báo Mèo Đen, và item chỉ làm cho thành viên Mũ Rơm (xem mục "Nhân vật, hệ và item").
+
+## Dữ liệu đã dựng trong `packs/onepiece/`
+
+Dựng ngày 11/11/2026. Chạy bằng `?pack=onepiece`. Phần không ghi "đã chốt" ở trên là **Đề xuất**:
+
+- **13 nhân vật.** Luffy dùng bộ skill và passive trong `docs/characters/luffy.md`, kèm 2★ (mốc: hạ Don Krieg). 12 nhân vật còn lại có base stat đề xuất, passive trống và skill placeholder (Power 40/60/80/120/150), chưa có cấp sao.
+- **Loại sát thương đề xuất:** Nami, Buggy, Usopp, Jango đánh phép; các nhân vật khác đánh vật lý.
+
+| Nhân vật | HP | Công | Thủ | Công phép | Thủ phép | Tốc độ | Tổng |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Luffy | 90 | 100 | 75 | 40 | 70 | 85 | 460 |
+| Alvida | 85 | 85 | 80 | 30 | 60 | 50 | 390 |
+| Zoro | 80 | 115 | 80 | 30 | 60 | 85 | 450 |
+| Morgan | 95 | 100 | 90 | 25 | 55 | 45 | 410 |
+| Nami | 70 | 50 | 60 | 100 | 85 | 100 | 465 |
+| Cabaji | 70 | 95 | 65 | 50 | 55 | 90 | 425 |
+| Buggy | 85 | 60 | 70 | 100 | 70 | 70 | 455 |
+| Usopp | 70 | 55 | 60 | 105 | 70 | 90 | 450 |
+| Jango | 75 | 70 | 65 | 95 | 70 | 85 | 460 |
+| Kuro | 75 | 110 | 70 | 40 | 65 | 120 | 480 |
+| Sanji | 80 | 110 | 75 | 40 | 65 | 100 | 470 |
+| Gin | 90 | 105 | 85 | 30 | 70 | 80 | 460 |
+| Don Krieg | 110 | 105 | 110 | 60 | 80 | 50 | 515 |
+
+- **9 loại lính.** Hệ: Hải tặc Alvida Thủy; Lính và Sĩ quan hải quân Kim; Hải tặc Buggy và Nghệ sĩ xiếc Hỏa (nghệ sĩ xiếc đánh phép); Thám báo và Hải tặc Mèo Đen Mộc; Đầu bếp Baratie Hỏa; Hải tặc Krieg Kim. Mỗi loại có đòn thường và 1 skill placeholder.
+- **Màn nhỏ** sinh theo đề xuất ở mục Cấu trúc: 10, 12, 15 màn; số lính tăng từ 1 lên 5; level tăng đều trong khoảng của map.
+- **Bản boss:** base stat của nhân vật, HP nhân 5, các chỉ số khác nhân 1,1. Bộ skill boss placeholder gồm đòn đơn mục tiêu, đòn đánh cả đội và tuyệt chiêu 1 lần mỗi trận.
+- **Item:** 5 item Mũ Rơm theo mẫu tăng sát thương. Zoro, Nami, Usopp, Sanji rơi item của mình; Mũ rơm tặng khi hoàn thành World 1.
+- **Ải phụ:** 4 thử thách với boss cuối mỗi arc (Morgan, Buggy, Kuro, Don Krieg) ở level 12, 19, 27, 34, HP nhân 6, chỉ số khác nhân 1,2. Thưởng 5, 8, 12, 15 đá sao.
+- **Cân bằng chưa làm.** `npm run sim -- --pack onepiece --bosses` cho thấy Luffy đánh một mình không qua được các boss từ map 7. Đây là dự kiến, vì từ đó người chơi phải có đội; con số thật chỉnh ở bước 6.
