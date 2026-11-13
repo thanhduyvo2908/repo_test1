@@ -1,16 +1,7 @@
 import { loadSpriteSheet, type SpriteSheet } from "../render/sprites";
+import { sheetSource } from "./sheetSources";
 
-// Finds exported sprite sheets for a pack. Assets are not committed, so any of them may be missing;
-// missing sheets fall back to shapes in the battle scene.
-
-const sheetJson = import.meta.glob("/packs/*/assets/*/sprite.json", { import: "default" }) as Record<
-  string,
-  () => Promise<unknown>
->;
-const atlasUrls = import.meta.glob("/packs/*/assets/*/atlas.png", {
-  query: "?url",
-  import: "default",
-}) as Record<string, () => Promise<string>>;
+// PixiJS sprite sheets for the battle scene. Missing sheets fall back to shapes in the scene.
 
 const cache = new Map<string, Promise<SpriteSheet | null>>();
 
@@ -18,13 +9,9 @@ export function loadSheet(packId: string, sourceId: string): Promise<SpriteSheet
   const key = `${packId}/${sourceId}`;
   const cached = cache.get(key);
   if (cached) return cached;
-  const base = `/packs/${packId}/assets/${sourceId}`;
-  const json = sheetJson[`${base}/sprite.json`];
-  const atlas = atlasUrls[`${base}/atlas.png`];
-  const promise =
-    json && atlas
-      ? Promise.all([json(), atlas()]).then(([raw, url]) => loadSpriteSheet(raw, url)).catch(() => null)
-      : Promise.resolve(null);
+  const promise = sheetSource(packId, sourceId).then((source) =>
+    source ? loadSpriteSheet(source.raw, source.atlasUrl).catch(() => null) : null,
+  );
   cache.set(key, promise);
   return promise;
 }

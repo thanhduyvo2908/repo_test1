@@ -13,6 +13,7 @@ type StageInput = MapInput["stages"][number];
 interface MapSpec {
   id: string;
   name: { en: string; vi: string };
+  arc: { en: string; vi: string };
   stages: number;
   /** Soldier types, mixed across the map's stages. */
   pool: string[];
@@ -29,34 +30,40 @@ const BOSS_HP = 5;
 const BOSS_OTHER = 1.1;
 const STRAW_HAT_RECRUIT = 0.1;
 
+// Arc names stay the same in both languages (docs/world-1.md).
+const ROMANCE = text("Romance Dawn", "Romance Dawn");
+const ORANGE = text("Orange Town", "Orange Town");
+const SYRUP = text("Syrup Village", "Syrup Village");
+const BARATIE = text("Baratie", "Baratie");
+
 const specs: MapSpec[] = [
-  { id: "alvida-ship", name: text("Alvida's Ship", "Tàu của Alvida"), stages: 10,
+  { id: "alvida-ship", name: text("Alvida's Ship", "Tàu của Alvida"), arc: ROMANCE, stages: 10,
     pool: ["alvida-pirate"], levels: [1, 3], boss: "alvida", bossLevel: 3 },
-  { id: "shells-execution-yard", name: text("Shells Town Execution Yard", "Bãi hành hình thị trấn Shells"), stages: 12,
+  { id: "shells-execution-yard", name: text("Shells Town Execution Yard", "Bãi hành hình thị trấn Shells"), arc: ROMANCE, stages: 12,
     pool: ["marine-soldier"], levels: [3, 5], boss: "zoro", bossLevel: 5,
     dropItemId: "wado-ichimonji", recruitRate: STRAW_HAT_RECRUIT },
-  { id: "shells-marine-base", name: text("Shells Town Marine Base", "Căn cứ hải quân Shells"), stages: 15,
+  { id: "shells-marine-base", name: text("Shells Town Marine Base", "Căn cứ hải quân Shells"), arc: ROMANCE, stages: 15,
     pool: ["marine-soldier", "marine-officer"], levels: [5, 8], boss: "morgan", bossLevel: 8 },
-  { id: "orange-town-streets", name: text("Orange Town Streets", "Phố Orange Town"), stages: 10,
+  { id: "orange-town-streets", name: text("Orange Town Streets", "Phố Orange Town"), arc: ORANGE, stages: 10,
     pool: ["buggy-pirate"], levels: [8, 10], boss: "nami", bossLevel: 10,
     dropItemId: "nami-staff", recruitRate: STRAW_HAT_RECRUIT },
-  { id: "orange-town-square", name: text("Orange Town Square", "Quảng trường Orange Town"), stages: 12,
+  { id: "orange-town-square", name: text("Orange Town Square", "Quảng trường Orange Town"), arc: ORANGE, stages: 12,
     pool: ["buggy-pirate", "circus-performer"], levels: [10, 13], boss: "cabaji", bossLevel: 13 },
-  { id: "buggy-rooftop", name: text("Buggy's Rooftop", "Sân thượng quán rượu của Buggy"), stages: 15,
+  { id: "buggy-rooftop", name: text("Buggy's Rooftop", "Sân thượng quán rượu của Buggy"), arc: ORANGE, stages: 15,
     pool: ["buggy-pirate", "circus-performer"], levels: [13, 15], boss: "buggy", bossLevel: 15 },
-  { id: "syrup-village-shore", name: text("Syrup Village Shore", "Bờ biển làng Syrup"), stages: 10,
+  { id: "syrup-village-shore", name: text("Syrup Village Shore", "Bờ biển làng Syrup"), arc: SYRUP, stages: 10,
     pool: ["black-cat-scout"], levels: [15, 18], boss: "usopp", bossLevel: 18,
     dropItemId: "slingshot", recruitRate: STRAW_HAT_RECRUIT },
-  { id: "north-slope", name: text("North Slope", "Con dốc phía bắc"), stages: 12,
+  { id: "north-slope", name: text("North Slope", "Con dốc phía bắc"), arc: SYRUP, stages: 12,
     pool: ["black-cat-pirate"], levels: [18, 20], boss: "jango", bossLevel: 20 },
-  { id: "kaya-mansion", name: text("Kaya's Mansion", "Dinh thự của Kaya"), stages: 15,
+  { id: "kaya-mansion", name: text("Kaya's Mansion", "Dinh thự của Kaya"), arc: SYRUP, stages: 15,
     pool: ["black-cat-pirate"], levels: [20, 23], boss: "kuro", bossLevel: 23 },
-  { id: "baratie-restaurant", name: text("Baratie Restaurant", "Nhà hàng Baratie"), stages: 10,
+  { id: "baratie-restaurant", name: text("Baratie Restaurant", "Nhà hàng Baratie"), arc: BARATIE, stages: 10,
     pool: ["baratie-cook", "marine-soldier"], levels: [23, 25], boss: "sanji", bossLevel: 25,
     dropItemId: "chef-shoes", recruitRate: STRAW_HAT_RECRUIT },
-  { id: "baratie-deck", name: text("Baratie Deck", "Sàn ngoài của Baratie"), stages: 12,
+  { id: "baratie-deck", name: text("Baratie Deck", "Sàn ngoài của Baratie"), arc: BARATIE, stages: 12,
     pool: ["krieg-pirate"], levels: [25, 28], boss: "gin", bossLevel: 28 },
-  { id: "krieg-galleon", name: text("Krieg's Wrecked Galleon", "Xác tàu của Krieg"), stages: 15,
+  { id: "krieg-galleon", name: text("Krieg's Wrecked Galleon", "Xác tàu của Krieg"), arc: BARATIE, stages: 15,
     pool: ["krieg-pirate"], levels: [28, 30], boss: "don-krieg", bossLevel: 30 },
 ];
 
@@ -97,6 +104,7 @@ export const worlds: WorldInput[] = [
       (s): MapInput => ({
         id: s.id,
         name: s.name,
+        arc: s.arc,
         stages: buildStages(s.stages, s.pool, s.levels),
         boss: {
           ...bossFor(s.boss, s.bossLevel),

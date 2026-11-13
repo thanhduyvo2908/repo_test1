@@ -139,94 +139,113 @@ export function analyzeMoves(
 
   const moves: MoveInfo[] = [];
   for (const [state, entry] of [...byState].sort((a, b) => a[0] - b[0])) {
-    const move: MoveInfo = {
-      state,
-      commands: [...entry.commands.values()],
-      anims: [],
-      effectAnims: [],
-      states: [],
-      flags: { throwReasons: [], fightfxAnims: [], fightfxSparks: [], dynamicAnims: [], powerCost: entry.power },
-    };
-    const visited = new Set<number>();
-    const addAnim = (list: number[], value: string | undefined, where: string) => {
-      if (value === undefined) return;
-      const v = value.trim();
-      if (/^f\s*\d+$/i.test(v)) {
-        move.flags.fightfxAnims.push(`${v.toUpperCase().replace(/\s/g, '')} (${where})`);
-        return;
-      }
-      if (/^s\s*\d+$/i.test(v)) {
-        const n = Number(v.replace(/\D/g, ''));
-        if (!list.includes(n)) list.push(n);
-        return;
-      }
-      const n = intLiteral(v);
-      if (n !== undefined) {
-        if (!list.includes(n)) list.push(n);
-        return;
-      }
-      // Expression: keep any literal that names an existing action.
-      move.flags.dynamicAnims.push(`${v} (${where})`);
-      for (const m of v.matchAll(/\b\d+\b/g)) {
-        const cand = Number(m[0]);
-        if (animExists(cand) && !list.includes(cand)) list.push(cand);
-      }
-    };
-    const visit = (id: number, asHelper: boolean, depth: number) => {
-      if (visited.has(id) || depth > 8) return;
-      visited.add(id);
-      move.states.push(id);
-      const def = states.get(id);
-      if (!def) return;
-      const animList = asHelper ? move.effectAnims : move.anims;
-      addAnim(animList, def.anim, `statedef ${id}`);
-      for (const c of def.controllers) {
-        const get = (k: string) => getValue(c.section, k);
-        switch (c.type) {
-          case 'changeanim':
-            addAnim(animList, get('value'), `state ${id}`);
-            break;
-          case 'changeanim2':
-            move.flags.throwReasons.push(`ChangeAnim2 in state ${id}`);
-            break;
-          case 'hitdef': {
-            if (get('p2stateno') !== undefined) move.flags.throwReasons.push(`HitDef p2stateno=${get('p2stateno')} in state ${id}`);
-            for (const k of ['sparkno', 'guard.sparkno']) {
-              const s = get(k)?.trim();
-              if (s && !/^s/i.test(s) && s !== '-1') move.flags.fightfxSparks.push(`${k}=${s}`);
-            }
-            const p1 = intLiteral(get('p1stateno'));
-            if (p1 !== undefined && !isCommonState(p1)) visit(p1, asHelper, depth + 1);
-            break;
-          }
-          case 'targetstate':
-          case 'targetbind':
-            move.flags.throwReasons.push(`${c.type} in state ${id}`);
-            break;
-          case 'explod':
-            addAnim(move.effectAnims, get('anim'), `explod in state ${id}`);
-            break;
-          case 'projectile':
-            for (const k of ['projanim', 'projhitanim', 'projremanim']) addAnim(move.effectAnims, get(k), `${k} in state ${id}`);
-            break;
-          case 'helper': {
-            const h = intLiteral(get('stateno'));
-            if (h !== undefined) visit(h, true, depth + 1);
-            break;
-          }
-          case 'changestate':
-          case 'selfstate': {
-            const next = intLiteral(get('value'));
-            if (next !== undefined && !isCommonState(next)) visit(next, asHelper, depth + 1);
-            break;
-          }
-        }
-      }
-    };
-    visit(state, false, 0);
-    move.flags.fightfxSparks = [...new Set(move.flags.fightfxSparks)];
-    move.flags.throwReasons = [...new Set(move.flags.throwReasons)];
-    moves.push(move);
+    const trace = traceMove(state, states, animExists);
+    trace.flags.powerCost = entry.power;
+    moves.push({ state, commands: [...entry.commands.values()], ...trace });
   }
   return moves;
+}
+
+/** What a move uses: its animations, effect animations, the states it visits and reuse flags. */
+export type MoveTrace = Omit<MoveInfo, 'state' | 'commands'>;
+
+/**
+ * Follows a move from its first state through ChangeState, SelfState, p1stateno and helpers,
+ * collecting animations in the order they are found. With `skipCombos`, state changes that wait
+ * for a button (combo follow-ups such as 200 -> 210 on a second press) are not followed.
+ */
+export function traceMove(
+  state: number,
+  states: Map<number, StateDef>,
+  animExists: (id: number) => boolean,
+  opts: { skipCombos?: boolean } = {},
+): MoveTrace {
+  const move: MoveTrace = {
+    anims: [],
+    effectAnims: [],
+    states: [],
+    flags: { throwReasons: [], fightfxAnims: [], fightfxSparks: [], dynamicAnims: [], powerCost: 0 },
+  };
+  const visited = new Set<number>();
+  const addAnim = (list: number[], value: string | undefined, where: string) => {
+    if (value === undefined) return;
+    const v = value.trim();
+    if (/^f\s*\d+$/i.test(v)) {
+      move.flags.fightfxAnims.push(`${v.toUpperCase().replace(/\s/g, '')} (${where})`);
+      return;
+    }
+    if (/^s\s*\d+$/i.test(v)) {
+      const n = Number(v.replace(/\D/g, ''));
+      if (!list.includes(n)) list.push(n);
+      return;
+    }
+    const n = intLiteral(v);
+    if (n !== undefined) {
+      if (!list.includes(n)) list.push(n);
+      return;
+    }
+    // Expression: keep any literal that names an existing action. Variable indices are not
+    // animations (100+var(11) is action 100 plus a costume offset, not action 11).
+    move.flags.dynamicAnims.push(`${v} (${where})`);
+    for (const m of v.replace(/\b\w*var\s*\(\s*\d+\s*\)/gi, '').matchAll(/\b\d+\b/g)) {
+      const cand = Number(m[0]);
+      if (animExists(cand) && !list.includes(cand)) list.push(cand);
+    }
+  };
+  const visit = (id: number, asHelper: boolean, depth: number) => {
+    if (visited.has(id) || depth > 8) return;
+    visited.add(id);
+    move.states.push(id);
+    const def = states.get(id);
+    if (!def) return;
+    const animList = asHelper ? move.effectAnims : move.anims;
+    addAnim(animList, def.anim, `statedef ${id}`);
+    for (const c of def.controllers) {
+      const get = (k: string) => getValue(c.section, k);
+      switch (c.type) {
+        case 'changeanim':
+          addAnim(animList, get('value'), `state ${id}`);
+          break;
+        case 'changeanim2':
+          move.flags.throwReasons.push(`ChangeAnim2 in state ${id}`);
+          break;
+        case 'hitdef': {
+          if (get('p2stateno') !== undefined) move.flags.throwReasons.push(`HitDef p2stateno=${get('p2stateno')} in state ${id}`);
+          for (const k of ['sparkno', 'guard.sparkno']) {
+            const s = get(k)?.trim();
+            if (s && !/^s/i.test(s) && s !== '-1') move.flags.fightfxSparks.push(`${k}=${s}`);
+          }
+          const p1 = intLiteral(get('p1stateno'));
+          if (p1 !== undefined && !isCommonState(p1)) visit(p1, asHelper, depth + 1);
+          break;
+        }
+        case 'targetstate':
+        case 'targetbind':
+          move.flags.throwReasons.push(`${c.type} in state ${id}`);
+          break;
+        case 'explod':
+          addAnim(move.effectAnims, get('anim'), `explod in state ${id}`);
+          break;
+        case 'projectile':
+          for (const k of ['projanim', 'projhitanim', 'projremanim']) addAnim(move.effectAnims, get(k), `${k} in state ${id}`);
+          break;
+        case 'helper': {
+          const h = intLiteral(get('stateno'));
+          if (h !== undefined) visit(h, true, depth + 1);
+          break;
+        }
+        case 'changestate':
+        case 'selfstate': {
+          const next = intLiteral(get('value'));
+          if (opts.skipCombos && c.triggers.some((t) => /\bcommand\s*=/i.test(t))) break;
+          if (next !== undefined && !isCommonState(next)) visit(next, asHelper, depth + 1);
+          break;
+        }
+      }
+    }
+  };
+  visit(state, false, 0);
+  move.flags.fightfxSparks = [...new Set(move.flags.fightfxSparks)];
+  move.flags.throwReasons = [...new Set(move.flags.throwReasons)];
+  return move;
 }

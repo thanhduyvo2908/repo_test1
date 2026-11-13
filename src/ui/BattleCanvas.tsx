@@ -19,17 +19,36 @@ interface Props {
   state: LayoutState;
   statusLabel: (event: Extract<BattleEvent, { type: "statusApplied" }>) => string;
   animFor: (unitUid: number, skillId: string) => string;
+  /** Playback speed: 1, 2 or 4. */
+  speed: number;
+  /** Pixels kept clear at the top (corner controls) and bottom (caption). */
+  topInset: number;
+  bottomInset: number;
+  /** Called once the scene and the battle's sprites are ready to show. */
+  onReady?: () => void;
 }
 
-/** The PixiJS battle scene, driven by the playback step of the battle screen. */
-export function BattleCanvas({ packId, units, log, step, state, statusLabel, animFor }: Props) {
+/** The PixiJS battle scene, driven by the playback step of the idle loop. */
+export function BattleCanvas({
+  packId,
+  units,
+  log,
+  step,
+  state,
+  statusLabel,
+  animFor,
+  speed,
+  topInset,
+  bottomInset,
+  onReady,
+}: Props) {
   const host = useRef<HTMLDivElement>(null);
   const [scene, setScene] = useState<BattleScene | null>(null);
   /** Units of the battle the scene was last set up for, with sheets attached. */
   const [ready, setReady] = useState<{ source: CanvasUnit[]; units: SceneUnit[] } | null>(null);
   const shown = useRef<{ units: SceneUnit[] | null; step: number }>({ units: null, step: 0 });
-  const callbacks = useRef({ statusLabel, animFor });
-  callbacks.current = { statusLabel, animFor };
+  const callbacks = useRef({ statusLabel, animFor, onReady, insets: { topInset, bottomInset } });
+  callbacks.current = { statusLabel, animFor, onReady, insets: { topInset, bottomInset } };
 
   // Create the PixiJS app once; tear it down on unmount.
   useEffect(() => {
@@ -43,6 +62,7 @@ export function BattleCanvas({ packId, units, log, step, state, statusLabel, ani
       reducedMotion: motion.matches,
       statusLabel: (event: Extract<BattleEvent, { type: "statusApplied" }>) => callbacks.current.statusLabel(event),
       animFor: (uid: number, skillId: string) => callbacks.current.animFor(uid, skillId),
+      ...callbacks.current.insets,
     });
     void BattleScene.create(element, options()).then((s) => {
       if (cancelled) {
@@ -50,23 +70,33 @@ export function BattleCanvas({ packId, units, log, step, state, statusLabel, ani
         return;
       }
       created = s;
+      s.setPaused(document.visibilityState === "hidden");
       setScene(s);
     });
     const observer = new ResizeObserver(() => created?.resize());
     observer.observe(element);
-    const dark = window.matchMedia("(prefers-color-scheme: dark)");
     const refresh = () => created?.setOptions(options());
-    dark.addEventListener("change", refresh);
     motion.addEventListener("change", refresh);
+    // No drawing while the browser tab is hidden; the idle loop itself keeps running.
+    const onVisibility = () => created?.setPaused(document.visibilityState === "hidden");
+    document.addEventListener("visibilitychange", onVisibility);
+    // The pixel font may arrive after the scene is built; names are redrawn with it.
+    void document.fonts?.ready.then(() => {
+      if (!cancelled) refresh();
+    });
     return () => {
       cancelled = true;
       observer.disconnect();
-      dark.removeEventListener("change", refresh);
       motion.removeEventListener("change", refresh);
+      document.removeEventListener("visibilitychange", onVisibility);
       created?.destroy();
       shown.current = { units: null, step: 0 };
     };
   }, []);
+
+  useEffect(() => {
+    scene?.setSpeed(speed);
+  }, [scene, speed]);
 
   // Load sprite sheets for a new battle. Units without a sheet are drawn as shapes.
   useEffect(() => {
@@ -92,6 +122,7 @@ export function BattleCanvas({ packId, units, log, step, state, statusLabel, ani
     if (shown.current.units !== ready.units) {
       scene.setup(ready.units);
       shown.current = { units: ready.units, step: 0 };
+      callbacks.current.onReady?.();
     }
     const previous = shown.current.step;
     if (step === previous + 1) {

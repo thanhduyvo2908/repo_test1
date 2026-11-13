@@ -5,6 +5,9 @@ import { loadPack, toDemoPack } from "./content/loader";
 import type { SaveStorage } from "./save";
 import { App } from "./ui/App";
 import { StoreProvider } from "./ui/store";
+// Tiny5 pixel font (OFL), bundled so the game works offline. See CREDITS.md.
+import "@fontsource/tiny5/latin.css";
+import "@fontsource/tiny5/latin-ext.css";
 import "./ui/styles.css";
 
 /** localStorage can be missing or throw (private mode, blocked storage); keep the game running. */

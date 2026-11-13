@@ -35,9 +35,12 @@ export function layoutBattle(
   units: readonly LayoutUnit[],
   state: LayoutState,
   width: number,
-  height: number,
+  sceneHeight: number,
+  /** Space kept free at the bottom, e.g. for a caption box drawn over the scene. */
+  bottomInset = 0,
 ): Map<number, Slot> {
   const slots = new Map<number, Slot>();
+  const height = Math.max(1, sceneHeight - bottomInset);
   const unit = Math.min(width / 6, height / 3.2);
   const groundY = height * 0.58;
 

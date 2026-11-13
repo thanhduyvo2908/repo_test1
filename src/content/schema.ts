@@ -220,6 +220,8 @@ export const bossSchema = z.object({
 export const mapSchema = z.object({
   id,
   name: localizedTextSchema,
+  /** Story arc the map belongs to. The world screen groups maps by it; maps without one are not grouped. */
+  arc: localizedTextSchema.optional(),
   stages: z.array(stageSchema).min(10).max(15),
   boss: bossSchema,
 });

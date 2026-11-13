@@ -173,6 +173,7 @@ Quy tắc:
 Repo khởi tạo ngày 11/11/2026, dùng Node 26, TypeScript 7, Vite 8, React 19, Vitest 5 và zod 4 cho schema.
 
 - `npm run dev`: chạy bản phát triển. `.claude/launch.json` có cấu hình `dev` ở cổng 5173 để mở trong trình duyệt của app. Mặc định chạy gói placeholder; thêm `?pack=onepiece` vào URL (hoặc đặt biến `VITE_PACK`) để chạy World 1. Mỗi gói có file lưu riêng. Thêm `&demo=1` để bật chế độ demo: mở hết map, màn, boss và skill (mốc mở skill về level 1), game mới có sẵn mọi nhân vật ở level tối đa, file lưu riêng. Chế độ demo chỉ để thử và trình diễn; luật chơi thật không đổi.
+- `npm run viewer` (hoặc bấm đúp `viewer.cmd`): mở tool xem nhân vật `tools/viewer/` trong trình duyệt. Khi `npm run dev` đang chạy thì mở thẳng `http://localhost:5173/tools/viewer/`. Tool đọc thẳng MUGEN và sheet GBA trong `assets-raw/`, cho điều khiển nhân vật như game đối kháng, xem mọi animation, danh sách chiêu từ `.cmd`, slot game đã xuất kèm `hitTick`, và ghép chuỗi khung cho `tools/sheets/*.json`. Atlas và ảnh thu nhỏ cache ở `tools/out/viewer/`. Tool chỉ chạy trên dev server, không vào bản build. Khi cần cho người dùng xem nhân vật hoặc animation, chỉ họ mở tool này thay vì tự dựng ảnh preview.
 - `npm test`: chạy Vitest
 - `npm run typecheck`
 - `npm run sim`: mô phỏng hàng loạt trận để kiểm tra cân bằng. Cho nhân vật khởi đầu đánh một mình mọi màn và boss của mọi map, in tỉ lệ thắng, số vòng và HP còn lại theo từng level. Tùy chọn: `-- --runs 500`, `-- --levels 1,3,5`, `-- --pack onepiece`, `-- --map <id>`, `-- --bosses`.

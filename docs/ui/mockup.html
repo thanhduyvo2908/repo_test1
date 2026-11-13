@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Xidle UI mockup</title>
+<!-- Static mockup for docs/ui/research.md. Not part of the game build.
+     Open through the dev server: http://localhost:5173/docs/ui/mockup.html
+     Query: ?lang=vi, ?view=adventure|maps|mapinfo|boss|recruit|team|desktop -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #11131d; --bg-2: #171a28; --panel: #1d2133; --panel-2: #262b42; --line: #3a4163;
+  --text: #eef0f7; --muted: #9aa3c0; --dim: #5d6585;
+  --accent: #e2453c; --accent-dark: #9e2a24; --gold: #f4c245; --hp: #4cc46a; --hp-low: #e8a33a; --hp-crit: #e2453c;
+  --metal: #aab4c3; --wood: #4caf50; --water: #3d8bf2; --fire: #ef5a3c; --earth: #c08a3e; --light: #f2d45c; --dark: #8a5cd6;
+  --pixel: "Tiny5", ui-monospace, monospace;
+  --body: system-ui, "Segoe UI", Roboto, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #0b0c13; color: var(--text); font: 14px/1.4 var(--body); }
+.gallery { display: flex; flex-wrap: wrap; gap: 24px; padding: 24px; align-items: flex-start; }
+.gallery > figure { margin: 0; }
+.gallery figcaption { font: 16px var(--pixel); color: var(--muted); margin-bottom: 8px; }
+.phone { width: 400px; height: 820px; background: var(--bg); position: relative; overflow: hidden; border: 1px solid #000; display: flex; flex-direction: column; }
+.single .gallery { padding: 0; gap: 0; }
+.single .gallery figcaption { display: none; }
+.single .phone { width: 100vw; height: 100vh; border: 0; }
+.single .desk { width: 100vw; height: 100vh; border: 0; }
+.single figure { display: none; }
+.single figure.on { display: block; }
+
+/* ---------- shared pieces ---------- */
+.px { font-family: var(--pixel); letter-spacing: .5px; }
+.topbar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--bg-2); border-bottom: 2px solid #000; }
+.topbar .logo { font: 22px var(--pixel); color: var(--accent); margin-right: auto; text-shadow: 2px 2px 0 #000; }
+.res { display: flex; align-items: center; gap: 4px; background: var(--panel); border: 2px solid #000; padding: 2px 8px; font: 15px var(--pixel); }
+.res i { width: 10px; height: 10px; display: inline-block; border: 1px solid #000; }
+.res .gold { background: var(--gold); border-radius: 50%; }
+.res .food { background: #e9875a; border-radius: 3px; }
+.iconbtn { width: 34px; height: 34px; display: grid; place-items: center; background: var(--panel); border: 2px solid #000; color: var(--text); font: 14px var(--pixel); }
+.ticker { font-size: 12px; color: var(--muted); padding: 6px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ticker b { color: var(--gold); font-weight: 600; }
+.scroll { flex: 1; overflow: auto; padding: 10px 12px 12px; }
+.card { background: var(--panel); border: 2px solid #000; box-shadow: inset 0 0 0 1px var(--line); border-radius: 6px; padding: 10px; }
+.card + .card { margin-top: 10px; }
+.h { font: 15px var(--pixel); color: var(--text); display: flex; align-items: center; gap: 6px; margin: 0 0 8px; }
+.h .right { margin-left: auto; color: var(--gold); }
+.muted { color: var(--muted); }
+.small { font-size: 12px; }
+.el { display: inline-block; font: 11px var(--pixel); padding: 1px 6px; border: 1px solid #000; border-radius: 3px; color: #111; vertical-align: middle; }
+.el.metal { background: var(--metal); } .el.wood { background: var(--wood); } .el.water { background: var(--water); color: #fff; }
+.el.fire { background: var(--fire); color: #fff; } .el.earth { background: var(--earth); } .el.dark { background: var(--dark); color: #fff; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 16px; font: 16px var(--pixel); color: #fff; background: var(--accent); border: 2px solid #000; box-shadow: inset 0 -4px 0 var(--accent-dark); border-radius: 4px; }
+.btn.ghost { background: var(--panel-2); box-shadow: inset 0 -4px 0 #151827; }
+.btn.gold { background: var(--gold); color: #1a1300; box-shadow: inset 0 -4px 0 #a37a12; }
+.btn.block { width: 100%; }
+.btn[disabled] { opacity: .45; }
+.bar { height: 6px; background: #0a0b12; border: 1px solid #000; border-radius: 2px; overflow: hidden; }
+.bar > span { display: block; height: 100%; background: var(--hp); }
+.bar.low > span { background: var(--hp-low); } .bar.crit > span { background: var(--hp-crit); }
+.bar.prog > span { background: var(--gold); }
+.row { display: flex; align-items: center; gap: 8px; }
+.grow { flex: 1; min-width: 0; }
+.pill { font: 12px var(--pixel); padding: 2px 8px; border: 2px solid #000; background: var(--panel-2); border-radius: 999px; }
+.pill.on { background: var(--accent); }
+.toggle { width: 38px; height: 22px; background: var(--hp); border: 2px solid #000; border-radius: 999px; position: relative; }
+.toggle::after { content: ""; position: absolute; right: 2px; top: 2px; width: 14px; height: 14px; background: #fff; border-radius: 50%; }
+
+/* sprites: atlas crops scaled with nearest-neighbour */
+.spr { display: inline-block; position: relative; vertical-align: bottom; }
+.spr > span { position: absolute; left: 0; bottom: 0; background-repeat: no-repeat; image-rendering: pixelated; transform-origin: 0 100%; }
+.portrait { width: 44px; height: 44px; background: var(--panel-2); border: 2px solid #000; border-radius: 4px; display: grid; place-items: end center; overflow: hidden; flex: none; }
+
+/* bottom nav */
+.bottomnav { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 6px; padding: 8px 10px 10px; background: var(--bg-2); border-top: 2px solid #000; }
+.bottomnav a { min-height: 48px; display: grid; place-items: center; gap: 0; background: var(--panel); border: 2px solid #000; border-radius: 6px; font: 12px var(--pixel); color: var(--muted); text-decoration: none; position: relative; padding: 4px 0; }
+.bottomnav a .ico { font-size: 18px; line-height: 1; }
+.bottomnav a.on { background: var(--accent); color: #fff; box-shadow: inset 0 -4px 0 var(--accent-dark); }
+.badge { position: absolute; top: -6px; right: -4px; background: var(--gold); color: #000; font: 11px var(--pixel); border: 2px solid #000; border-radius: 999px; padding: 0 5px; }
+
+/* ---------- adventure ---------- */
+.strip { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.strip .name { font: 13px var(--pixel); color: var(--muted); white-space: nowrap; }
+.dots { flex: 1; display: flex; gap: 3px; align-items: center; }
+.dots i { flex: 1; height: 8px; background: var(--panel-2); border: 1px solid #000; }
+.dots i.done { background: var(--hp); } .dots i.cur { background: var(--gold); height: 12px; }
+.dots i.boss { flex: none; width: 16px; height: 16px; background: var(--accent); border-radius: 50%; }
+.strip .count { font: 14px var(--pixel); color: var(--gold); }
+.scene { position: relative; height: 236px; border: 2px solid #000; border-radius: 6px; overflow: hidden;
+  background: linear-gradient(#5fb4e8 0 46%, #8fd0f0 46% 56%, #e9d49a 56% 100%); }
+.scene::before { content: ""; position: absolute; left: 0; right: 0; top: 46%; height: 10%; background: repeating-linear-gradient(90deg, #3f8fc6 0 18px, #4c9bd2 18px 36px); opacity: .8; }
+.scene::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 18%; background: repeating-linear-gradient(90deg, #d8bf7f 0 8px, #ccb06e 8px 16px); }
+.scene .ovl { position: absolute; z-index: 3; }
+.scene .tl { left: 8px; top: 8px; display: flex; gap: 6px; }
+.scene .tr { right: 8px; top: 8px; display: flex; gap: 2px; background: rgba(10,11,18,.75); border: 2px solid #000; border-radius: 4px; padding: 2px; }
+.scene .tr b { font: 12px var(--pixel); padding: 2px 6px; color: var(--muted); font-weight: normal; }
+.scene .tr b.on { background: var(--accent); color: #fff; }
+.chip { background: rgba(10,11,18,.75); border: 2px solid #000; border-radius: 4px; padding: 2px 6px; font: 12px var(--pixel); }
+.unit { position: absolute; z-index: 2; text-align: center; }
+.unit .tag { font: 11px var(--pixel); background: rgba(10,11,18,.8); border: 1px solid #000; padding: 0 4px; margin-bottom: 3px; display: inline-flex; gap: 4px; align-items: center; white-space: nowrap; }
+.unit .bar { width: 64px; margin: 0 auto 3px; }
+.float { position: absolute; z-index: 4; font: 18px var(--pixel); color: #fff; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000; }
+.float.weak { color: #c9d3e8; font-size: 13px; }
+.float.crit { color: var(--gold); }
+.caption { position: absolute; z-index: 3; left: 10px; right: 10px; bottom: 8px; background: #f8f6ef; color: #1b1d28; border: 2px solid #000; border-radius: 4px; padding: 4px 8px; font: 13px var(--pixel); box-shadow: 0 2px 0 #000; }
+.caption em { color: #b5281f; font-style: normal; }
+.bench { position: absolute; z-index: 2; bottom: 40px; display: flex; gap: 2px; align-items: flex-end; }
+.team { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-top: 8px; }
+.team .m { background: var(--panel); border: 2px solid #000; border-radius: 4px; padding: 4px 3px 5px; text-align: center; position: relative; }
+.team .m.active { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+.team .m.out { opacity: .4; }
+.team .m .lv { font: 10px var(--pixel); color: var(--muted); }
+.team .m .bar { margin-top: 2px; height: 5px; }
+.team .m .stat { position: absolute; top: 2px; right: 2px; font: 9px var(--pixel); background: var(--dark); border: 1px solid #000; padding: 0 2px; }
+.idle-row { display: flex; gap: 8px; margin-top: 10px; }
+.idle-row .card { flex: 1; margin: 0; padding: 8px; }
+.kv { font: 18px var(--pixel); color: var(--gold); }
+.mapcard { display: flex; align-items: center; gap: 10px; }
+.mapcard .chev { color: var(--muted); font: 16px var(--pixel); }
+.enemy-list { display: flex; gap: 6px; flex-wrap: wrap; }
+.enemy { display: flex; align-items: center; gap: 6px; background: var(--panel-2); border: 2px solid #000; border-radius: 4px; padding: 4px 8px 4px 4px; }
+.hint { font-size: 12px; color: var(--muted); margin-top: 8px; padding: 6px 8px; border: 1px dashed var(--line); border-radius: 4px; }
+.hint b { color: var(--text); }
+.log { font-size: 12px; line-height: 1.55; color: var(--muted); max-height: 92px; overflow: hidden; }
+.log b { color: var(--text); font-weight: 600; }
+.log .se { color: var(--gold); }
+
+/* ---------- sheets ---------- */
+.dim { position: absolute; inset: 0; background: rgba(5,6,10,.6); z-index: 5; }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; top: 56px; z-index: 6; background: var(--bg-2); border-top: 2px solid #000; border-radius: 12px 12px 0 0; display: flex; flex-direction: column; box-shadow: 0 -4px 0 #000; }
+.sheet .grab { width: 44px; height: 4px; border-radius: 2px; background: var(--line); margin: 8px auto 4px; }
+.sheet .head { display: flex; align-items: center; gap: 8px; padding: 4px 14px 10px; border-bottom: 1px solid var(--line); }
+.sheet .head h2 { font: 20px var(--pixel); margin: 0; }
+.sheet .close { margin-left: auto; }
+.arc { font: 12px var(--pixel); color: var(--muted); text-transform: uppercase; margin: 14px 2px 6px; display: flex; gap: 6px; }
+.arc span { margin-left: auto; }
+.maprow { display: flex; align-items: center; gap: 10px; background: var(--panel); border: 2px solid #000; border-left: 5px solid var(--line); border-radius: 6px; padding: 8px; margin-bottom: 6px; }
+.maprow.cur { border-left-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+.maprow.done { border-left-color: var(--hp); }
+.maprow.locked { opacity: .5; }
+.maprow .no { font: 13px var(--pixel); color: var(--dim); width: 18px; }
+.maprow .t { font: 15px var(--pixel); }
+.maprow .meta { font-size: 12px; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+.maprow .flags { display: flex; gap: 4px; font-size: 13px; }
+.maprow .bar { width: 70px; }
+.side { border-left-color: var(--dark); background: linear-gradient(90deg, rgba(138,92,214,.18), transparent 60%), var(--panel); }
+
+.banner { position: relative; height: 150px; background: linear-gradient(#5fb4e8 0 55%, #e9d49a 55%); border-bottom: 2px solid #000; overflow: hidden; }
+.banner .boss { position: absolute; right: 26px; bottom: 6px; }
+.banner .state { position: absolute; left: 10px; top: 10px; }
+.bossname { padding: 10px 14px 0; }
+.bossname .sub { font-size: 12px; color: var(--muted); }
+.bossname h2 { font: 24px var(--pixel); margin: 2px 0 6px; }
+.facts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 0 14px 10px; }
+.fact { background: var(--panel); border: 2px solid #000; border-radius: 4px; padding: 5px 8px; }
+.fact .k { font-size: 11px; color: var(--muted); }
+.fact .v { font: 16px var(--pixel); }
+.skill { background: var(--panel-2); border: 2px solid #000; border-radius: 4px; padding: 6px 8px; margin-bottom: 6px; }
+.skill .top { display: flex; gap: 6px; align-items: center; font: 13px var(--pixel); }
+.skill .top .cd { margin-left: auto; color: var(--muted); font-size: 11px; }
+.skill p { margin: 3px 0 0; font-size: 12px; color: var(--muted); }
+.tiers { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+.tiers span { font: 11px var(--pixel); padding: 1px 6px; border: 1px solid #000; border-radius: 3px; background: var(--panel-2); }
+.t-common { color: #cfd5e3; } .t-rare { color: #66a8ff; } .t-epic { color: #c08cff; } .t-legendary { color: var(--gold); }
+.stages { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.stages b { font: 13px var(--pixel); font-weight: normal; text-align: center; padding: 6px 0; background: var(--panel-2); border: 2px solid #000; border-radius: 3px; }
+.stages b.done { background: #24432c; color: #9fe0ad; } .stages b.cur { background: var(--gold); color: #000; } .stages b.lock { color: var(--dim); }
+.sticky-cta { padding: 10px 14px 12px; border-top: 2px solid #000; background: var(--bg-2); display: flex; gap: 8px; }
+.sticky-cta .btn { flex: 1; }
+
+/* ---------- recruit modal ---------- */
+.modal { position: absolute; z-index: 7; left: 18px; right: 18px; top: 150px; background: var(--panel); border: 2px solid #000; border-radius: 10px; box-shadow: 0 0 0 2px var(--gold), 0 6px 0 #000; overflow: hidden; }
+.modal .mh { background: linear-gradient(90deg, #6b3d1d, #3a2414); padding: 10px 14px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid #000; }
+.modal .mh h3 { font: 22px var(--pixel); margin: 0; }
+.new { font: 11px var(--pixel); background: var(--gold); color: #000; border: 2px solid #000; border-radius: 999px; padding: 0 6px; }
+.modal .mb { padding: 14px; display: flex; gap: 12px; }
+.modal .art { width: 120px; height: 120px; background: radial-gradient(circle at 50% 70%, #3a4163, #1d2133 70%); border: 2px solid #000; border-radius: 8px; display: grid; place-items: end center; padding-bottom: 6px; flex: none; }
+
+/* ---------- desktop ---------- */
+.desk { width: 1280px; height: 800px; background: var(--bg); border: 1px solid #000; display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
+.desk .cols { display: grid; grid-template-columns: 240px 1fr 320px; min-height: 0; }
+.desk .sidebar { background: var(--bg-2); border-right: 2px solid #000; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+.navitem { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 2px solid transparent; border-radius: 6px; font: 15px var(--pixel); color: var(--muted); }
+.navitem.on { background: var(--accent); color: #fff; border-color: #000; box-shadow: inset 0 -4px 0 var(--accent-dark); }
+.navitem .badge { position: static; margin-left: auto; }
+.desk .center { padding: 14px 18px; overflow: auto; }
+.desk .center .scene { height: 400px; }
+.desk .right { border-left: 2px solid #000; background: var(--bg-2); padding: 12px; overflow: auto; }
+.desk .ticker { border: 0; padding: 0; }
+</style>
+</head>
+<body>
+<template id="tpl">
+<div class="gallery">
+
+<!-- ================= 1. Mobile: adventure ================= -->
+<figure id="adventure"><figcaption>1 · {{Adventure (400px)|Phiêu lưu (400px)}}</figcaption>
+<div class="phone">
+  <div class="topbar">
+    <span class="logo">XIDLE</span>
+    <span class="res"><i class="gold"></i>161K</span>
+    <span class="res"><i class="food"></i>91K</span>
+    <span class="iconbtn" title="Settings">⚙</span>
+  </div>
+  <div class="ticker">⚑ <b>{{Nami joined|Nami gia nhập}}</b> · {{Buggy dropped Nami's Staff (Rare)|Buggy rơi Gậy của Nami (Hiếm)}} · {{Syrup Village Shore opened|Đã mở Bờ biển làng Syrup}}</div>
+  <div class="scroll">
+    <div class="strip">
+      <span class="name">{{Stage|Màn}} 5</span>
+      <div class="dots"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="cur"></i><i></i><i></i><i></i><i></i><i></i><i class="boss" title="Boss"></i></div>
+      <span class="count">5/10</span>
+    </div>
+    <div class="scene">
+      <div class="ovl tl"><span class="chip">{{Wins|Thắng}} 37</span><span class="chip">{{Foe|Địch}} 2/3</span></div>
+      <div class="ovl tr"><b class="on">×1</b><b>×2</b><b>×4</b><b>⏭</b></div>
+      <div class="unit" style="left:70px; bottom:44px">
+        <div class="tag">Luffy <span class="el earth">{{Earth|Thổ}}</span></div>
+        <div class="bar low"><span style="width:52%"></span></div>
+        <span class="spr" data-id="luffy" data-s="2"></span>
+      </div>
+      <div class="unit" style="right:60px; bottom:44px">
+        <div class="tag">{{Black Cat Scout|Thám báo Mèo Đen}} <span class="el wood">{{Wood|Mộc}}</span></div>
+        <div class="bar"><span style="width:76%"></span></div>
+        <span class="spr" data-id="black-cat-pirate" data-s="2" data-flip="1"></span>
+      </div>
+      <div class="float weak" style="right:70px; top:118px">-9 {{Not very effective|Ít hiệu quả}}</div>
+      <div class="bench" style="left:6px"><span class="spr" data-id="zoro" data-s=".7"></span><span class="spr" data-id="nami" data-s=".6"></span><span class="spr" data-id="buggy" data-s=".6"></span><span class="spr" data-id="alvida" data-s=".55"></span></div>
+      <div class="bench" style="right:6px"><span class="spr" data-id="black-cat-pirate" data-s=".8" data-flip="1"></span></div>
+      <div class="caption"><em>Luffy</em> {{used|dùng}} <em>Gum-Gum Pistol</em>!</div>
+    </div>
+    <div class="team">
+      <div class="m active"><span class="spr" data-id="luffy" data-k="portrait" data-s="1"></span><div class="lv">Lv16</div><div class="bar low"><span style="width:52%"></span></div><span class="stat">-DEF</span></div>
+      <div class="m"><span class="spr" data-id="zoro" data-k="portrait" data-s=".72"></span><div class="lv">Lv15</div><div class="bar"><span style="width:100%"></span></div></div>
+      <div class="m"><span class="spr" data-id="nami" data-k="portrait" data-s=".8"></span><div class="lv">Lv14</div><div class="bar"><span style="width:100%"></span></div></div>
+      <div class="m"><span class="spr" data-id="buggy" data-k="portrait" data-s=".8"></span><div class="lv">Lv15</div><div class="bar"><span style="width:100%"></span></div></div>
+      <div class="m"><span class="spr" data-id="alvida" data-k="portrait" data-s="1.1"></span><div class="lv">Lv12</div><div class="bar"><span style="width:100%"></span></div></div>
+    </div>
+    <div class="idle-row">
+      <div class="card"><div class="small muted">{{Per hour|Mỗi giờ}}</div><div class="kv">+38K <span class="small muted">{{gold|vàng}}</span></div></div>
+      <div class="card"><div class="small muted">{{Auto-advance|Tự đi tiếp}}</div><div class="row" style="margin-top:4px"><span class="toggle"></span><span class="small">{{On|Bật}}</span></div></div>
+    </div>
+    <div class="card" style="margin-top:10px">
+      <div class="mapcard">
+        <span class="portrait"><span class="spr" data-id="usopp" data-k="portrait" data-s=".9"></span></span>
+        <div class="grow"><div class="small muted">Syrup Village · {{Map|Map}} 7/12</div><div class="px" style="font-size:16px">{{Syrup Village Shore|Bờ biển làng Syrup}}</div><div class="small muted">{{Boss locked: clear 6 more stages|Boss khóa: còn 6 màn nhỏ}}</div></div>
+        <span class="chev">▾</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="h">{{Found here|Ở đây có}} <span class="right small">ⓘ</span></div>
+      <div class="enemy-list">
+        <span class="enemy"><span class="portrait" style="width:30px;height:30px"><span class="spr" data-id="black-cat-pirate" data-k="portrait" data-s="1.1"></span></span><span class="small">{{Black Cat Scout|Thám báo Mèo Đen}}<br><span class="el wood">{{Wood|Mộc}}</span> <span class="muted">Lv 15–18</span></span></span>
+        <span class="enemy"><span class="portrait" style="width:30px;height:30px"><span class="spr" data-id="usopp" data-k="portrait" data-s=".6"></span></span><span class="small">Usopp · Boss<br><span class="el wood">{{Wood|Mộc}}</span> <span class="muted">Lv 18 · 10%</span></span></span>
+      </div>
+      <div class="hint">{{Counter|Khắc chế}}: <b>{{Metal|Kim}}</b> {{beats|khắc}} <b>{{Wood|Mộc}}</b> — Zoro. <b>{{Earth|Thổ}}</b> {{is weak here|bị khắc ở đây}} — Luffy.</div>
+    </div>
+    <div class="card">
+      <div class="h">{{Battle log|Nhật ký trận}} <span class="right small">{{Expand|Mở rộng}} ▾</span></div>
+      <div class="log">
+        <div>{{Round|Vòng}} 4 · <b>Luffy</b> {{used|dùng}} <b>Gum-Gum Pistol</b> → 9 {{dmg|ST}} <span class="muted">(×0.5)</span>, {{healed|hồi}} 3</div>
+        <div><b>{{Black Cat Scout|Thám báo Mèo Đen}}</b> {{used|dùng}} <b>{{Strike|Đòn mạnh}}</b> → 17 {{dmg|ST}} <span class="se">(×2 {{super effective|khắc hệ}})</span></div>
+        <div><b>Luffy</b>: −20% {{physical damage taken|ST vật lý nhận}} (Rubber Body)</div>
+      </div>
+    </div>
+  </div>
+  <nav class="bottomnav">
+    <a class="on"><span class="ico">⚔</span>{{Adventure|Phiêu lưu}}</a>
+    <a><span class="ico">🗺</span>{{World|Thế giới}}<span class="badge">3</span></a>
+    <a><span class="ico">☺</span>{{Crew|Đội hình}}</a>
+    <a><span class="ico">◈</span>{{Items|Item}}</a>
+  </nav>
+</div></figure>
+
+<!-- ================= 2. Mobile: world sheet ================= -->
+<figure id="maps"><figcaption>2 · {{World sheet|Bảng Thế giới}}</figcaption>
+<div class="phone">
+  <div class="topbar"><span class="logo">XIDLE</span><span class="res"><i class="gold"></i>161K</span><span class="res"><i class="food"></i>91K</span><span class="iconbtn">⚙</span></div>
+  <div class="dim"></div>
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="head"><h2>East Blue</h2><span class="muted small">{{World 1 · 6/12 bosses · Lv cap 30|World 1 · 6/12 boss · Giới hạn Lv 30}}</span><span class="iconbtn close">✕</span></div>
+    <div class="scroll">
+      <div class="arc">Romance Dawn <span>3/3</span></div>
+      <div class="maprow done"><span class="no">01</span><span class="portrait"><span class="spr" data-id="alvida" data-k="portrait" data-s="1.4"></span></span><div class="grow"><div class="t">{{Alvida's Ship|Tàu của Alvida}}</div><div class="meta">Lv 1–3 <span class="el water">{{Water|Thủy}}</span></div></div><div class="flags">✓ ★</div></div>
+      <div class="maprow done"><span class="no">02</span><span class="portrait"><span class="spr" data-id="zoro" data-k="portrait" data-s=".8"></span></span><div class="grow"><div class="t">{{Shells Town Execution Yard|Bãi hành hình thị trấn Shells}}</div><div class="meta">Lv 3–5 <span class="el metal">{{Metal|Kim}}</span></div></div><div class="flags">✓ ★ ◈</div></div>
+      <div class="maprow done"><span class="no">03</span><span class="portrait"><span class="spr" data-id="morgan" data-k="portrait" data-s=".75"></span></span><div class="grow"><div class="t">{{Shells Town Marine Base|Căn cứ hải quân Shells}}</div><div class="meta">Lv 5–8 <span class="el metal">{{Metal|Kim}}</span></div></div><div class="flags">✓ ★</div></div>
+      <div class="maprow side"><span class="no">⚑</span><span class="portrait"><span class="spr" data-id="morgan" data-k="portrait" data-s=".75"></span></span><div class="grow"><div class="t">{{Trial: Axe-Hand Morgan|Thử thách: Morgan Tay Rìu}}</div><div class="meta">Lv 12 · +5 {{star stones|đá sao}}</div></div><span class="pill">{{Enter|Vào}}</span></div>
+      <div class="arc">Orange Town <span>3/3</span></div>
+      <div class="maprow done"><span class="no">04</span><span class="portrait"><span class="spr" data-id="nami" data-k="portrait" data-s=".95"></span></span><div class="grow"><div class="t">{{Orange Town Streets|Phố Orange Town}}</div><div class="meta">Lv 8–10 <span class="el water">{{Water|Thủy}}</span></div></div><div class="flags">✓ ★ ◈</div></div>
+      <div class="maprow done"><span class="no">05</span><span class="portrait"><span class="spr" data-id="buggy-pirate" data-k="portrait" data-s="1.6"></span></span><div class="grow"><div class="t">{{Orange Town Square|Quảng trường Orange Town}}</div><div class="meta">Lv 10–13 <span class="el fire">{{Fire|Hỏa}}</span></div></div><div class="flags">✓ ★</div></div>
+      <div class="maprow done"><span class="no">06</span><span class="portrait"><span class="spr" data-id="buggy" data-k="portrait" data-s=".95"></span></span><div class="grow"><div class="t">{{Buggy's Rooftop|Sân thượng quán rượu của Buggy}}</div><div class="meta">Lv 13–15 <span class="el fire">{{Fire|Hỏa}}</span></div></div><div class="flags">✓ ★</div></div>
+      <div class="maprow side"><span class="no">⚑</span><span class="portrait"><span class="spr" data-id="buggy" data-k="portrait" data-s=".95"></span></span><div class="grow"><div class="t">{{Trial: Buggy the Clown|Thử thách: Buggy Chú Hề}}</div><div class="meta">Lv 19 · +8 {{star stones|đá sao}}</div></div><span class="pill">{{Enter|Vào}}</span></div>
+      <div class="arc">Syrup Village <span>0/3</span></div>
+      <div class="maprow cur"><span class="no">07</span><span class="portrait"><span class="spr" data-id="usopp" data-k="portrait" data-s=".9"></span></span><div class="grow"><div class="t">{{Syrup Village Shore|Bờ biển làng Syrup}}</div><div class="meta">Lv 15–18 <span class="el wood">{{Wood|Mộc}}</span> <span class="bar prog"><span style="width:40%"></span></span> 4/10</div></div><span class="pill on">{{Here|Đang ở}}</span></div>
+      <div class="maprow locked"><span class="no">08</span><span class="portrait">?</span><div class="grow"><div class="t">{{North Slope|Con dốc phía bắc}}</div><div class="meta">🔒 {{Defeat Usopp|Hạ Usopp}}</div></div></div>
+      <div class="maprow locked"><span class="no">09</span><span class="portrait">?</span><div class="grow"><div class="t">{{Kaya's Mansion|Dinh thự của Kaya}}</div><div class="meta">🔒</div></div></div>
+    </div>
+  </div>
+  <nav class="bottomnav"><a><span class="ico">⚔</span>{{Adventure|Phiêu lưu}}</a><a class="on"><span class="ico">🗺</span>{{World|Thế giới}}<span class="badge">3</span></a><a><span class="ico">☺</span>{{Crew|Đội hình}}</a><a><span class="ico">◈</span>{{Items|Item}}</a></nav>
+</div></figure>
+
+<!-- ================= 3. Mobile: map info ================= -->
+<figure id="mapinfo"><figcaption>3 · {{Map info sheet|Thông tin map}}</figcaption>
+<div class="phone">
+  <div class="topbar"><span class="logo">XIDLE</span><span class="res"><i class="gold"></i>161K</span><span class="res"><i class="food"></i>91K</span><span class="iconbtn">⚙</span></div>
+  <div class="dim"></div>
+  <div class="sheet" style="top:40px">
+    <div class="banner">
+      <span class="chip state" style="position:absolute;left:10px;top:10px">▶ {{In progress|Đang đánh}}</span>
+      <span class="iconbtn" style="position:absolute;right:10px;top:10px">✕</span>
+      <span class="boss"><span class="spr" data-id="usopp" data-s="2.2" data-flip="1"></span></span>
+      <span style="position:absolute;left:30px;bottom:10px"><span class="spr" data-id="black-cat-pirate" data-s="1.6" data-flip="1"></span></span>
+    </div>
+    <div class="scroll" style="padding:0">
+      <div class="bossname"><div class="sub">Syrup Village · {{Map|Map}} 7</div><h2>{{Syrup Village Shore|Bờ biển làng Syrup}}</h2></div>
+      <div class="facts">
+        <div class="fact"><div class="k">Boss</div><div class="v">Usopp <span class="el wood">{{Wood|Mộc}}</span></div></div>
+        <div class="fact"><div class="k">{{Boss level|Level boss}}</div><div class="v">18</div></div>
+        <div class="fact"><div class="k">{{Recruit chance|Tỉ lệ chiêu mộ}}</div><div class="v">10%</div></div>
+        <div class="fact"><div class="k">{{Item drop|Rơi item}}</div><div class="v">50%</div></div>
+      </div>
+      <div style="padding:0 14px 14px">
+        <div class="card"><div class="h">{{Boss skills|Skill của boss}} <span class="right small">4</span></div>
+          <div class="skill"><div class="top">{{Basic Attack|Đánh thường}} <span class="el wood">{{Wood|Mộc}}</span><span class="cd">{{Power|Sức mạnh}} 40</span></div></div>
+          <div class="skill"><div class="top">{{Strike|Đòn mạnh}} <span class="el wood">{{Wood|Mộc}}</span><span class="cd">{{CD 2 · Power 60|Hồi 2 · Sức mạnh 60}}</span></div><p>{{Hits the front-most hero.|Đánh người đứng đầu đội.}}</p></div>
+          <div class="skill"><div class="top">{{Sweep|Quét}} <span class="el wood">{{Wood|Mộc}}</span><span class="cd">{{CD 3 · All · 50|Hồi 3 · Cả đội · 50}}</span></div><p>{{Hits the whole team.|Đánh cả đội.}}</p></div>
+          <div class="skill"><div class="top">{{Finisher|Tuyệt chiêu}} <span class="el wood">{{Wood|Mộc}}</span><span class="cd">{{Once · 110|1 lần · 110}}</span></div></div>
+        </div>
+        <div class="card"><div class="h">{{Drops|Rơi đồ}}</div>
+          <div class="row"><span class="portrait" style="width:36px;height:36px;place-items:center">◈</span><div class="grow"><div class="px">{{Slingshot|Ná cao su}}</div><div class="small muted">{{Raises magic damage of Wood skills.|Tăng sát thương phép của skill hệ Mộc.}}</div></div></div>
+          <div class="tiers"><span class="t-common">{{Common|Thường}} +5%</span><span class="t-rare">{{Rare|Hiếm}} +10%</span><span class="t-epic">{{Epic|Sử thi}} +20%</span><span class="t-legendary">{{Legendary|Huyền thoại}} +30%</span></div>
+        </div>
+        <div class="card"><div class="h">{{Enemies|Lính}}</div>
+          <div class="enemy-list"><span class="enemy"><span class="portrait" style="width:30px;height:30px"><span class="spr" data-id="black-cat-pirate" data-k="portrait" data-s="1.1"></span></span><span class="small">{{Black Cat Scout|Thám báo Mèo Đen}}<br><span class="el wood">{{Wood|Mộc}}</span> <span class="muted">Lv 15–18 · 1–5 {{per stage|mỗi màn}}</span></span></span></div>
+        </div>
+        <div class="card"><div class="h">{{Stages|Màn nhỏ}} <span class="right small">4/10</span></div>
+          <div class="stages"><b class="done">1</b><b class="done">2</b><b class="done">3</b><b class="done">4</b><b class="cur">5</b><b class="lock">6</b><b class="lock">7</b><b class="lock">8</b><b class="lock">9</b><b class="lock">10</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="sticky-cta"><span class="btn ghost">{{Grind stage 5|Treo màn 5}}</span><span class="btn" disabled>{{Boss 🔒|Boss 🔒}}</span></div>
+  </div>
+</div></figure>
+
+<!-- ================= 4. Mobile: boss fight ================= -->
+<figure id="boss"><figcaption>4 · {{Boss fight 5 vs 1|Trận boss 5 đấu 1}}</figcaption>
+<div class="phone">
+  <div class="topbar"><span class="logo">XIDLE</span><span class="res"><i class="gold"></i>161K</span><span class="res"><i class="food"></i>91K</span><span class="iconbtn">⚙</span></div>
+  <div class="ticker">⚑ {{Boss fight · auto-grind paused|Đánh boss · tạm dừng treo máy}}</div>
+  <div class="scroll">
+    <div class="card" style="padding:8px; margin-bottom:8px">
+      <div class="row"><span class="px" style="font-size:16px">Usopp</span><span class="el wood">{{Wood|Mộc}}</span><span class="muted small">Lv 18</span><span class="grow"></span><span class="px small" style="color:var(--gold)">{{Round|Vòng}} 6/30</span></div>
+      <div class="bar crit" style="height:12px; margin-top:6px"><span style="width:22%"></span></div>
+      <div class="small muted" style="margin-top:4px">{{Effects|Hiệu ứng}}: <span class="el dark">{{Stun 1|Choáng 1}}</span></div>
+    </div>
+    <div class="scene" style="height:250px">
+      <div class="ovl tr"><b class="on">×1</b><b>×2</b><b>×4</b><b>⏭</b></div>
+      <div class="unit" style="left:6px; bottom:44px"><span class="spr" data-id="alvida" data-s="1.1"></span></div>
+      <div class="unit" style="left:58px; bottom:56px"><span class="spr" data-id="buggy" data-s="1.1"></span></div>
+      <div class="unit" style="left:104px; bottom:44px"><span class="spr" data-id="nami" data-s="1.1"></span></div>
+      <div class="unit" style="left:144px; bottom:56px"><span class="spr" data-id="zoro" data-s="1.3"></span></div>
+      <div class="unit" style="left:190px; bottom:44px"><span class="spr" data-id="luffy" data-s="1.5"></span></div>
+      <div class="unit" style="right:24px; bottom:44px"><span class="spr" data-id="usopp" data-s="2.4" data-flip="1"></span></div>
+      <div class="float crit" style="right:70px; top:56px">-84 ×2!</div>
+      <div class="caption"><em>Zoro</em> {{used|dùng}} <em>{{Strike|Đòn mạnh}}</em> — {{super effective!|khắc hệ!}}</div>
+    </div>
+    <div class="team">
+      <div class="m active"><span class="spr" data-id="luffy" data-k="portrait" data-s="1"></span><div class="lv">Lv16</div><div class="bar crit"><span style="width:18%"></span></div><span class="stat" style="background:var(--water)">🛡</span></div>
+      <div class="m"><span class="spr" data-id="zoro" data-k="portrait" data-s=".72"></span><div class="lv">Lv15</div><div class="bar"><span style="width:80%"></span></div></div>
+      <div class="m"><span class="spr" data-id="nami" data-k="portrait" data-s=".8"></span><div class="lv">Lv14</div><div class="bar low"><span style="width:45%"></span></div></div>
+      <div class="m"><span class="spr" data-id="buggy" data-k="portrait" data-s=".8"></span><div class="lv">Lv15</div><div class="bar"><span style="width:90%"></span></div></div>
+      <div class="m out"><span class="spr" data-id="alvida" data-k="portrait" data-s="1.1"></span><div class="lv">KO</div><div class="bar"><span style="width:0"></span></div></div>
+    </div>
+    <div class="card" style="margin-top:10px"><div class="h">{{Battle log|Nhật ký trận}}</div>
+      <div class="log">
+        <div>{{Round|Vòng}} 6 · <b>Zoro</b> {{used|dùng}} <b>{{Strike|Đòn mạnh}}</b> → 84 {{dmg|ST}} <span class="se">(×2)</span></div>
+        <div><b>Usopp</b> {{is stunned|bị choáng}}</div>
+        <div>{{Round|Vòng}} 5 · <b>Usopp</b> {{used|dùng}} <b>{{Sweep|Quét}}</b> → {{whole team|cả đội}}; <b>Alvida</b> {{fell|gục}}</div>
+      </div>
+    </div>
+  </div>
+</div></figure>
+
+<!-- ================= 5. Mobile: recruit result ================= -->
+<figure id="recruit"><figcaption>5 · {{Victory and recruit|Thắng boss, chiêu mộ}}</figcaption>
+<div class="phone">
+  <div class="topbar"><span class="logo">XIDLE</span><span class="res"><i class="gold"></i>162K</span><span class="res"><i class="food"></i>92K</span><span class="iconbtn">⚙</span></div>
+  <div class="dim"></div>
+  <div class="modal">
+    <div class="mh"><h3>Usopp</h3><span class="new">{{NEW|MỚI}}</span><span class="grow"></span><span class="px small muted">{{Recruited!|Chiêu mộ!}}</span></div>
+    <div class="mb">
+      <div class="art"><span class="spr" data-id="usopp" data-s="1.9"></span></div>
+      <div class="grow">
+        <div><span class="el wood">{{Wood|Mộc}}</span> <span class="pill">{{Magic|Phép}}</span></div>
+        <div class="facts" style="padding:8px 0 0; grid-template-columns:1fr 1fr">
+          <div class="fact"><div class="k">Level</div><div class="v">18</div></div>
+          <div class="fact"><div class="k">{{Stars|Sao}}</div><div class="v" style="color:var(--gold)">★</div></div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:0 14px 6px">
+      <div class="card" style="padding:8px">
+        <div class="small muted">{{Rewards|Phần thưởng}}</div>
+        <div class="row px" style="gap:12px; margin-top:4px"><span>+900 {{gold|vàng}}</span><span>+540 food</span></div>
+        <div class="row" style="margin-top:6px"><span class="portrait" style="width:30px;height:30px;place-items:center">◈</span><span class="px t-rare">{{Slingshot · Rare|Ná cao su · Hiếm}}</span></div>
+        <div class="small" style="margin-top:6px; color:var(--hp)">🔓 {{North Slope opened|Đã mở Con dốc phía bắc}}</div>
+      </div>
+    </div>
+    <div style="padding:10px 14px 14px; display:flex; gap:8px"><span class="btn ghost" style="flex:1">{{Add to crew|Thêm vào đội}}</span><span class="btn gold" style="flex:1">{{Next map ▶|Sang map mới ▶}}</span></div>
+  </div>
+</div></figure>
+
+<!-- ================= 6. Desktop ================= -->
+<figure id="desktop"><figcaption>6 · {{Desktop 1280px, three columns|Máy tính 1280px, 3 cột}}</figcaption>
+<div class="desk">
+  <div class="topbar">
+    <span class="logo">XIDLE</span>
+    <span class="ticker" style="flex:1; margin:0 16px">⚑ <b>{{Nami joined|Nami gia nhập}}</b> · {{Buggy dropped Nami's Staff (Rare)|Buggy rơi Gậy của Nami (Hiếm)}}</span>
+    <span class="res"><i class="gold"></i>161,190</span><span class="res"><i class="food"></i>91,738</span><span class="res">◈ 7</span><span class="res">★ 13</span>
+    <span class="iconbtn">EN</span><span class="iconbtn">⚙</span>
+  </div>
+  <div class="cols">
+    <aside class="sidebar">
+      <div class="card" style="margin-bottom:8px">
+        <div class="small muted">East Blue · {{Map|Map}} 7/12</div>
+        <div class="px" style="font-size:15px">{{Syrup Village Shore|Bờ biển làng Syrup}}</div>
+        <div class="bar prog" style="margin-top:6px"><span style="width:40%"></span></div>
+        <div class="small muted" style="margin-top:4px">{{Stage|Màn}} 5/10 · +38K {{gold/h|vàng/giờ}}</div>
+      </div>
+      <div class="navitem on">⚔ {{Adventure|Phiêu lưu}}</div>
+      <div class="navitem">🗺 {{World|Thế giới}} <span class="badge">3</span></div>
+      <div class="navitem">☺ {{Crew|Đội hình}}</div>
+      <div class="navitem">◈ {{Items|Item}}</div>
+    </aside>
+    <main class="center">
+      <div class="strip"><span class="name">{{Stage|Màn}} 5</span><div class="dots"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="cur"></i><i></i><i></i><i></i><i></i><i></i><i class="boss"></i></div><span class="count">5/10</span><span class="row small" style="margin-left:10px"><span class="toggle"></span>{{Auto-advance|Tự đi tiếp}}</span></div>
+      <div class="scene">
+        <div class="ovl tl"><span class="chip">{{Wins|Thắng}} 37</span><span class="chip">{{Foe|Địch}} 2/3</span></div>
+        <div class="ovl tr"><b class="on">×1</b><b>×2</b><b>×4</b><b>⏭</b></div>
+        <div class="unit" style="left:200px; bottom:70px"><div class="tag">Luffy <span class="el earth">{{Earth|Thổ}}</span></div><div class="bar low" style="width:90px"><span style="width:52%"></span></div><span class="spr" data-id="luffy" data-s="3"></span></div>
+        <div class="unit" style="right:180px; bottom:70px"><div class="tag">{{Black Cat Scout|Thám báo Mèo Đen}} <span class="el wood">{{Wood|Mộc}}</span></div><div class="bar" style="width:90px"><span style="width:76%"></span></div><span class="spr" data-id="black-cat-pirate" data-s="3" data-flip="1"></span></div>
+        <div class="bench" style="left:12px; bottom:70px"><span class="spr" data-id="zoro" data-s="1.1"></span><span class="spr" data-id="nami" data-s="1"></span><span class="spr" data-id="buggy" data-s="1"></span><span class="spr" data-id="alvida" data-s=".9"></span></div>
+        <div class="bench" style="right:12px; bottom:70px"><span class="spr" data-id="black-cat-pirate" data-s="1.2" data-flip="1"></span></div>
+        <div class="caption" style="left:120px; right:120px; font-size:15px"><em>Luffy</em> {{used|dùng}} <em>Gum-Gum Pistol</em>!</div>
+      </div>
+      <div class="team" style="grid-template-columns:repeat(5, 1fr); gap:8px">
+        <div class="m active row" style="padding:6px"><span class="spr" data-id="luffy" data-k="portrait" data-s="1"></span><div class="grow" style="text-align:left"><div class="px small">Luffy</div><div class="bar low"><span style="width:52%"></span></div></div></div>
+        <div class="m row" style="padding:6px"><span class="spr" data-id="zoro" data-k="portrait" data-s=".72"></span><div class="grow" style="text-align:left"><div class="px small">Zoro</div><div class="bar"><span style="width:100%"></span></div></div></div>
+        <div class="m row" style="padding:6px"><span class="spr" data-id="nami" data-k="portrait" data-s=".8"></span><div class="grow" style="text-align:left"><div class="px small">Nami</div><div class="bar"><span style="width:100%"></span></div></div></div>
+        <div class="m row" style="padding:6px"><span class="spr" data-id="buggy" data-k="portrait" data-s=".8"></span><div class="grow" style="text-align:left"><div class="px small">Buggy</div><div class="bar"><span style="width:100%"></span></div></div></div>
+        <div class="m row" style="padding:6px"><span class="spr" data-id="alvida" data-k="portrait" data-s="1.1"></span><div class="grow" style="text-align:left"><div class="px small">Alvida</div><div class="bar"><span style="width:100%"></span></div></div></div>
+      </div>
+      <div class="card" style="margin-top:10px"><div class="h">{{Battle log|Nhật ký trận}}</div>
+        <div class="log" style="max-height:none">
+          <div>{{Round|Vòng}} 4 · <b>Luffy</b> {{used|dùng}} <b>Gum-Gum Pistol</b> → 9 {{dmg|ST}} <span class="muted">(×0.5)</span>, {{healed|hồi}} 3</div>
+          <div><b>{{Black Cat Scout|Thám báo Mèo Đen}}</b> {{used|dùng}} <b>{{Strike|Đòn mạnh}}</b> → 17 {{dmg|ST}} <span class="se">(×2 {{super effective|khắc hệ}})</span></div>
+        </div>
+      </div>
+    </main>
+    <aside class="right">
+      <div class="h">{{Found here|Ở đây có}}</div>
+      <div class="card">
+        <div class="row"><span class="portrait"><span class="spr" data-id="usopp" data-k="portrait" data-s=".9"></span></span><div class="grow"><div class="px">Usopp <span class="el wood">{{Wood|Mộc}}</span></div><div class="small muted">Boss · Lv 18 · {{Recruit|Chiêu mộ}} 10%</div></div></div>
+        <div class="skill" style="margin-top:8px"><div class="top">{{Strike|Đòn mạnh}}<span class="cd">{{CD 2 · 60|Hồi 2 · 60}}</span></div></div>
+        <div class="skill"><div class="top">{{Sweep|Quét}}<span class="cd">{{CD 3 · All · 50|Hồi 3 · Cả đội · 50}}</span></div></div>
+        <div class="skill"><div class="top">{{Finisher|Tuyệt chiêu}}<span class="cd">{{Once · 110|1 lần · 110}}</span></div></div>
+        <span class="btn block" disabled>{{Boss: 6 stages left|Boss: còn 6 màn}}</span>
+      </div>
+      <div class="card"><div class="h">{{Drops|Rơi đồ}}</div><div class="px">{{Slingshot|Ná cao su}} · 50%</div><div class="tiers"><span class="t-common">+5%</span><span class="t-rare">+10%</span><span class="t-epic">+20%</span><span class="t-legendary">+30%</span></div></div>
+      <div class="card"><div class="h">{{Enemies|Lính}}</div><div class="enemy"><span class="portrait" style="width:30px;height:30px"><span class="spr" data-id="black-cat-pirate" data-k="portrait" data-s="1.1"></span></span><span class="small">{{Black Cat Scout|Thám báo Mèo Đen}} <span class="el wood">{{Wood|Mộc}}</span><br><span class="muted">Lv 15–18</span></span></div>
+        <div class="hint">{{Counter|Khắc chế}}: <b>{{Metal|Kim}}</b> {{beats|khắc}} <b>{{Wood|Mộc}}</b> — Zoro.</div></div>
+    </aside>
+  </div>
+</div></figure>
+
+</div>
+</template>
+<script>
+// Idle and portrait frames copied from packs/onepiece/assets/<id>/sprite.json (local only, not committed).
+const FRAMES = {"alvida":{"idle":{"x":623,"y":0,"w":55,"h":60},"portrait":{"x":630,"y":90,"w":26,"h":29}},"black-cat-pirate":{"idle":{"x":121,"y":0,"w":36,"h":44},"portrait":{"x":566,"y":0,"w":22,"h":23}},"buggy":{"idle":{"x":328,"y":0,"w":38,"h":58},"portrait":{"x":510,"y":131,"w":38,"h":42}},"buggy-pirate":{"idle":{"x":121,"y":0,"w":36,"h":44},"portrait":{"x":566,"y":0,"w":22,"h":23}},"luffy":{"idle":{"x":889,"y":0,"w":30,"h":47},"portrait":{"x":319,"y":153,"w":30,"h":33}},"morgan":{"idle":{"x":388,"y":0,"w":52,"h":74},"portrait":{"x":0,"y":98,"w":52,"h":57}},"nami":{"idle":{"x":216,"y":0,"w":38,"h":62},"portrait":{"x":365,"y":71,"w":38,"h":42}},"usopp":{"idle":{"x":376,"y":73,"w":42,"h":52},"portrait":{"x":807,"y":73,"w":42,"h":46}},"zoro":{"idle":{"x":485,"y":0,"w":45,"h":52},"portrait":{"x":617,"y":0,"w":45,"h":50}}};
+const params = new URLSearchParams(location.search);
+const lang = params.get("lang") === "vi" ? "vi" : "en";
+document.documentElement.lang = lang;
+const html = document.getElementById("tpl").innerHTML.replace(/\{\{([^|}]*)\|([^}]*)\}\}/g, (_, en, vi) => (lang === "vi" ? vi : en));
+document.body.insertAdjacentHTML("beforeend", html);
+const view = params.get("view");
+if (view) { document.body.classList.add("single"); document.getElementById(view)?.classList.add("on"); }
+for (const el of document.querySelectorAll(".spr")) {
+  const f = FRAMES[el.dataset.id]?.[el.dataset.k || "idle"];
+  if (!f) continue;
+  const s = Number(el.dataset.s || 1);
+  el.style.width = `${Math.round(f.w * s)}px`;
+  el.style.height = `${Math.round(f.h * s)}px`;
+  const inner = document.createElement("span");
+  inner.style.width = `${f.w}px`;
+  inner.style.height = `${f.h}px`;
+  inner.style.backgroundImage = `url(../../packs/onepiece/assets/${el.dataset.id}/atlas.png)`;
+  inner.style.backgroundPosition = `-${f.x}px -${f.y}px`;
+  inner.style.transform = el.dataset.flip ? `translateX(${f.w * s}px) scale(${-s}, ${s})` : `scale(${s})`;
+  el.appendChild(inner);
+}
+</script>
+</body>
+</html>

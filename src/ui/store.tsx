@@ -20,6 +20,7 @@ import {
 } from "../core/progress";
 import { localize, translate, type Lang, type LocalizedText, type StringKey, type TemplateParams } from "../i18n";
 import { loadSave, writeSave, type SaveData, type SaveStorage } from "../save";
+import { fullNumber, shortNumber } from "./format";
 
 interface StoreValue {
   pack: Pack;
@@ -38,6 +39,8 @@ interface StoreValue {
   l: (text: LocalizedText) => string;
   /** Formats a number with the active language's digit grouping. */
   n: (value: number) => string;
+  /** Short number with K and M, for tight spots. */
+  ns: (value: number) => string;
   /** Offline reward collected on load, waiting to be shown. */
   offlineReward: OfflineReward | null;
   dismissOfflineReward: () => void;
@@ -154,9 +157,9 @@ export function StoreProvider({
 
   const value = useMemo<StoreValue>(() => {
     const lang = save.settings.lang;
-    const numberFormat = new Intl.NumberFormat(lang === "vi" ? "vi-VN" : "en-US");
     return {
-      n: (value) => numberFormat.format(value),
+      n: (value) => fullNumber(value, lang),
+      ns: (value) => shortNumber(value, lang),
       pack,
       save,
       game: save.game ?? startGame(pack, 0),

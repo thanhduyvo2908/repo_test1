@@ -51,6 +51,17 @@ describe("layoutBattle", () => {
     for (const slot of slots.values()) expect(inside(slot)).toBe(true);
   });
 
+  it("keeps a bottom inset clear for the caption", () => {
+    const units = [
+      { uid: 0, side: "player" as const, kind: "character" as const },
+      { uid: 1, side: "player" as const, kind: "character" as const },
+      { uid: 2, side: "enemy" as const, kind: "enemy" as const },
+    ];
+    const state = { onField: new Set([0, 2]), hp: [100, 100, 100] };
+    const slots = layoutBattle(units, state, 400, 236, 38);
+    for (const slot of slots.values()) expect(slot.y + slot.size / 2).toBeLessThanOrEqual(236 - 38);
+  });
+
   it("keeps players from overlapping in a full boss fight", () => {
     const units: LayoutUnit[] = [
       ...[0, 1, 2, 3, 4].map((uid) => ({ uid, side: "player" as const, kind: "character" as const })),

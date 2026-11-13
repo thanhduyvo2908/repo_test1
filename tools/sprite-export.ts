@@ -28,6 +28,7 @@ import { encodePngRgba } from './mugen/png';
 import { EXPORTS, SLOTS } from './sprite-export-config';
 import type { ActionPick, ExportEntry, Slot } from './sprite-export-config';
 import { loadImage } from './sheet/image';
+import { forwardReachTick, hitDefTick, middleTick, tickOfFrame } from './sprite-hit';
 import { crop, findBackground, removeBackground, sliceSheet } from './sheet/slice';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -65,16 +66,6 @@ interface Exported {
   notes: string[];
 }
 
-/** Tick at which frame `index` (0-based) starts. Held frames count as 0. */
-function tickOfFrame(frames: AnimFrame[], index: number): number {
-  return frames.slice(0, index).reduce((n, f) => n + Math.max(0, f.ticks), 0);
-}
-
-/** Fallback hit timing: the start of the middle frame. */
-function middleTick(frames: AnimFrame[]): number {
-  return tickOfFrame(frames, Math.floor(frames.length / 2));
-}
-
 // ---------- MUGEN ----------
 
 interface SlotPick {
@@ -110,18 +101,11 @@ export function pickMugenSlots(c: MugenCharacter): Partial<Record<Slot, SlotPick
   };
 }
 
-/** Tick of the first HitDef in a state, from `AnimElem = n` or `Time = t` triggers. */
-function hitDefTick(c: MugenCharacter, state: number, frames: AnimFrame[]): number | undefined {
-  for (const ctrl of c.states.get(state)?.controllers ?? []) {
-    if (ctrl.type !== 'hitdef') continue;
-    for (const t of ctrl.triggers) {
-      const elem = /animelem\s*=\s*(\d+)/i.exec(t);
-      if (elem) return tickOfFrame(frames, Math.max(0, Number(elem[1]) - 1));
-      const time = /\btime\s*=\s*(\d+)/i.exec(t);
-      if (time) return Number(time[1]);
-    }
-  }
-  return undefined;
+/** The state that plays an action: the pick's own state, else one whose anim is that action. */
+function stateOfAction(c: MugenCharacter, p: SlotPick): number | undefined {
+  if (p.state !== undefined) return p.state;
+  for (const [id, st] of c.states) if (st.anim !== undefined && Number(st.anim) === p.action) return id;
+  return c.moves.find((m) => m.anims.includes(p.action))?.state;
 }
 
 function exportMugen(entry: Extract<ExportEntry, { mugen: string }>): Exported {
@@ -157,17 +141,21 @@ function exportMugen(entry: Extract<ExportEntry, { mugen: string }>): Exported {
       const f = sprite(fr.group, fr.image);
       if (f !== undefined) frames.push({ f, dx: fr.x, dy: fr.y, ticks: fr.time, flipH: fr.flipH });
     }
-    // A cut-out range has no matching HitDef timing; the hit lands on its widest frame (the
-    // fully stretched limb).
     const loopStart = ranged ? 0 : Math.min(action.loopStart, Math.max(0, frames.length - 1));
     const anim: Anim = { frames, loopStart };
     if (ATTACK_SLOTS.includes(slot) && frames.length) {
-      if (ranged) {
-        const widest = frames.reduce((best, fr, i) => (images[fr.f]!.w > images[frames[best]!.f]!.w ? i : best), 0);
-        anim.hitTick = tickOfFrame(frames, widest);
-      } else {
-        anim.hitTick = (p.state !== undefined ? hitDefTick(c, p.state, frames) : undefined) ?? middleTick(frames);
-      }
+      // The move's own HitDef timing first. A cut-out range only takes HitDefs inside it, and
+      // falls back to its furthest-reaching frame.
+      const state = stateOfAction(c, p);
+      const hitDefs = (state !== undefined ? (c.states.get(state)?.controllers ?? []) : [])
+        .filter((ctrl) => ctrl.type === 'hitdef')
+        .map((ctrl) => ctrl.triggers);
+      const fromHitDef = hitDefTick(hitDefs, frames, { action: p.action, from: p.from ?? 0, to: p.to ?? action.frames.length - 1 });
+      anim.hitTick =
+        fromHitDef ??
+        (ranged
+          ? forwardReachTick(frames.map((fr) => ({ ...fr, w: images[fr.f]!.w, ax: images[fr.f]!.ax })), entry.facing ?? 'right')
+          : middleTick(frames));
     }
     anims[slot] = anim;
     const range = ranged ? `[${p.from ?? 0}-${p.to ?? action.frames.length - 1}]` : '';

@@ -1,5 +1,6 @@
 node_modules/
 dist/
+dist-demo/
 coverage/
 *.log
 .DS_Store
@@ -8,3 +9,6 @@ coverage/
 assets-raw/
 packs/onepiece/assets/
 tools/out/
+
+# UI research screenshots: Poke'Catch captures and shots with ripped sprites (docs/ui/research.md).
+docs/ui/shots/

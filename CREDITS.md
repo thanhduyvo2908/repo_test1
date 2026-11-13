@@ -48,3 +48,10 @@ Tác giả lấy từ dòng `author` trong file `.def`. Các nhân vật dưới
 | Don Krieg (dự phòng, `krieg-edd13`) | edd13, sprite gốc của vbc | [Mugen Free For All](https://mugenfreeforall.com/topic/26450-don-krieg-by-edd13-released-dec-27-2015/) | Không ghi; `.def` để trống tác giả |
 
 Toàn bộ 201 nhân vật của bản V14 nằm trong `assets-raw/op14/chars/`; tác giả từng nhân vật xem trang "Tất cả MUGEN" của `docs/sprite-status.xlsx`. Nhân vật nào được nhập vào `packs/` thì thêm một dòng vào bảng trên.
+
+## Font
+
+| Font | Tác giả | Nguồn | Giấy phép |
+| --- | --- | --- | --- |
+| Tiny5 | The Tiny5 Project Authors ([github.com/Gissio/font_tiny5](https://github.com/Gissio/font_tiny5)) | Gói npm `@fontsource/tiny5` 5.3.0 (bộ latin và latin-ext), đóng gói vào bản build | SIL Open Font License 1.1 |
+| Tiny5, bộ chữ tiếng Việt | The Tiny5 Project Authors | Google Fonts, Tiny5 bản v4, bộ `vietnamese`. Người dùng cho phép tải ngày 12/11/2026. File `src/ui/fonts/tiny5-vietnamese-400-normal.woff2`, 2.692 byte | SIL Open Font License 1.1 |

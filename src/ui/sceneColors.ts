@@ -1,6 +1,6 @@
 import type { SceneTheme } from "../render/BattleScene";
 
-// Colors for the battle scene, read from the CSS theme so the canvas follows light and dark mode.
+// Colors for the battle scene, read from the CSS theme so the canvas matches the page.
 // Kept apart from BattleCanvas so screens can use them without loading PixiJS.
 
 /** Reads a CSS color variable as a 0xRRGGBB number. */
@@ -12,14 +12,15 @@ function cssColor(name: string, fallback: number): number {
 
 export function readSceneTheme(): SceneTheme {
   return {
-    text: cssColor("--text", 0x1f2328),
-    muted: cssColor("--muted", 0x6b7078),
-    hpTrack: cssColor("--surface", 0xffffff),
-    hp: cssColor("--hp", 0x3f8f4a),
-    hpLow: cssColor("--hp-low", 0xc8442b),
-    damage: cssColor("--lose", 0xb42318),
-    heal: cssColor("--win", 0x2f7d3b),
-    status: cssColor("--tier-epic", 0x7a3fb3),
+    text: cssColor("--text", 0xeef0f7),
+    muted: cssColor("--muted", 0x9aa3c0),
+    hpTrack: cssColor("--bar-track", 0x0a0b12),
+    hp: cssColor("--hp", 0x4cc46a),
+    hpLow: cssColor("--hp-crit", 0xe2453c),
+    damage: cssColor("--lose", 0xe2453c),
+    heal: cssColor("--win", 0x4cc46a),
+    status: cssColor("--el-dark", 0x8a5cd6),
+    highlight: cssColor("--gold", 0xf4c245),
   };
 }
 

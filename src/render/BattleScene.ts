@@ -1,7 +1,7 @@
 import { Application, Container, Graphics, Sprite, Text } from "pixi.js";
 import type { BattleEvent } from "../core/battle";
 import { advance, startState, TICKS_PER_SECOND, type AnimState, type SpriteAnim } from "./animClock";
-import { layoutBattle, type LayoutState, type LayoutUnit, type Slot } from "./layout";
+import { isBossFight, layoutBattle, type LayoutState, type LayoutUnit, type Slot } from "./layout";
 import type { SpriteSheet } from "./sprites";
 
 // Battle scene: replays battle log events. It never computes damage; it only shows what the log
@@ -25,6 +25,8 @@ export interface SceneTheme {
   damage: number;
   heal: number;
   status: number;
+  /** Critical hits and super effective tags. */
+  highlight: number;
 }
 
 export interface SceneOptions {
@@ -35,6 +37,10 @@ export interface SceneOptions {
   statusLabel: (event: Extract<BattleEvent, { type: "statusApplied" }>) => string;
   /** Animation key for a skill a unit uses: "basic", "s1", "s2", "s3". */
   animFor: (unitUid: number, skillId: string) => string;
+  /** Pixels at the bottom kept clear for the caption box drawn over the scene. */
+  bottomInset: number;
+  /** Pixels at the top kept clear for the corner controls; name labels stay below. */
+  topInset: number;
 }
 
 interface Animation {
@@ -81,7 +87,9 @@ interface Tween {
   done?: () => void;
 }
 
-const HEIGHT = 220;
+const MIN_HEIGHT = 160;
+const FONT = "Tiny5, ui-monospace, monospace";
+const BAR_HEIGHT = 5;
 
 export class BattleScene {
   private readonly app: Application;
@@ -92,6 +100,7 @@ export class BattleScene {
   private state: LayoutState = { onField: new Set(), hp: [] };
   private tweens: Tween[] = [];
   private destroyed = false;
+  private speed = 1;
 
   private constructor(
     app: Application,
@@ -100,16 +109,16 @@ export class BattleScene {
   ) {
     this.app = app;
     app.stage.addChild(this.world, this.fx);
-    app.ticker.add((ticker) => this.tick(ticker.deltaMS));
+    app.ticker.add((ticker) => this.tick(ticker.deltaMS * this.speed));
   }
 
   static async create(host: HTMLElement, options: SceneOptions): Promise<BattleScene> {
     const app = new Application();
     await app.init({
       width: Math.max(1, host.clientWidth),
-      height: HEIGHT,
+      height: Math.max(MIN_HEIGHT, host.clientHeight),
       backgroundAlpha: 0,
-      antialias: true,
+      antialias: false,
       resolution: Math.min(window.devicePixelRatio || 1, 2),
       autoDensity: true,
     });
@@ -124,6 +133,18 @@ export class BattleScene {
       view.name.style.fill = options.theme.text;
       this.drawHp(view);
     }
+  }
+
+  /** Playback speed for animations and tweens: 1, 2 or 4. */
+  setSpeed(speed: number): void {
+    this.speed = speed > 0 ? speed : 1;
+  }
+
+  /** Stops drawing while the scene cannot be seen. */
+  setPaused(paused: boolean): void {
+    if (this.destroyed) return;
+    if (paused) this.app.ticker.stop();
+    else this.app.ticker.start();
   }
 
   /** Starts a new battle: builds a view per unit, everyone at full HP and nobody on the field yet. */
@@ -142,7 +163,12 @@ export class BattleScene {
       const hpBar = new Graphics();
       const name = new Text({
         text: unit.label,
-        style: { fontFamily: "system-ui, sans-serif", fontSize: 11, fill: this.options.theme.text },
+        style: {
+          fontFamily: FONT,
+          fontSize: 12,
+          fill: this.options.theme.text,
+          stroke: { color: 0x000000, width: 3 },
+        },
       });
       name.anchor.set(0.5, 1);
       const sprite = unit.sheet ? new Sprite(unit.sheet.textures[0]) : null;
@@ -202,7 +228,11 @@ export class BattleScene {
             this.flash(target);
           }
           const text = event.absorbed > 0 ? `-${event.amount} (${event.absorbed})` : `-${event.amount}`;
-          this.floatText(target, event.crit ? `${text}!` : text, theme.damage, event.crit ? 18 : 15);
+          const tag = event.effectiveness > 1 ? `×${event.effectiveness}` : event.effectiveness < 1 ? `×${event.effectiveness}` : "";
+          this.floatText(target, event.crit ? `${text}!` : text, event.crit ? theme.highlight : theme.text, event.crit ? 22 : 17, {
+            tag,
+            tagColor: event.effectiveness > 1 ? theme.highlight : theme.muted,
+          });
         }
         return;
       }
@@ -210,7 +240,7 @@ export class BattleScene {
         const view = this.views.get(event.unit);
         if (view) {
           this.setHp(view, event.hpAfter);
-          this.floatText(view, `-${event.amount + event.absorbed}`, theme.status, 13);
+          this.floatText(view, `-${event.amount + event.absorbed}`, theme.status, 14);
         }
         return;
       }
@@ -218,14 +248,14 @@ export class BattleScene {
         const view = this.views.get(event.unit);
         if (view) {
           this.setHp(view, event.hpAfter);
-          this.floatText(view, `+${event.amount}`, theme.heal, 14);
+          this.floatText(view, `+${event.amount}`, theme.heal, 15);
         }
         return;
       }
       case "statusApplied": {
         const view = this.views.get(event.unit);
         const label = this.options.statusLabel(event);
-        if (view && label) this.floatText(view, label, theme.status, 11);
+        if (view && label) this.floatText(view, label, theme.status, 12);
         return;
       }
       case "turnSkipped": {
@@ -240,8 +270,9 @@ export class BattleScene {
 
   resize(): void {
     const width = Math.max(1, this.host.clientWidth);
-    if (width === this.app.screen.width) return;
-    this.app.renderer.resize(width, HEIGHT);
+    const height = Math.max(MIN_HEIGHT, this.host.clientHeight);
+    if (width === this.app.screen.width && height === this.app.screen.height) return;
+    this.app.renderer.resize(width, height);
     const slots = this.layout();
     for (const view of this.views.values()) this.place(view, slots.get(view.unit.uid)!, false);
   }
@@ -255,8 +286,8 @@ export class BattleScene {
   // -------------------------------------------------------------------------
 
   private layout(): Map<number, Slot> {
-    const width = this.app.screen.width;
-    return layoutBattle(this.units, this.state, width, HEIGHT);
+    const { width, height } = this.app.screen;
+    return layoutBattle(this.units, this.state, width, height, this.options.bottomInset);
   }
 
   private relayout(): void {
@@ -291,18 +322,43 @@ export class BattleScene {
     return Math.max(slot.size, slot.y + slot.size / 2 - 18);
   }
 
+  /** Standing height of the unit in scene pixels: the idle pose, not the current frame. */
+  private standingHeight(view: UnitView): number {
+    const { size } = view.slot;
+    const sheet = view.unit.sheet;
+    if (view.sprite && sheet) return spriteDisplayHeight(size, sheet.standingHeight, sheet.extraScale, this.headroom(view.slot));
+    return size;
+  }
+
+  /** Where labels go: duels show name and HP over the fighters; boss fights show them in the page. */
+  private labelMode(view: UnitView): "above" | "below" | "none" {
+    if (view.slot.role === "fallen") return "none";
+    if (isBossFight(this.units)) return view.unit.kind === "boss" ? "none" : "below";
+    return view.slot.role === "field" ? "above" : "below";
+  }
+
+  /**
+   * Local y of the label's bottom edge for units labelled above. It sits over the standing head,
+   * whatever frame plays, and never climbs into the corner controls.
+   */
+  private labelBottom(view: UnitView): number {
+    const { slot } = view;
+    const headY = slot.y + slot.size / 2 - this.standingHeight(view);
+    const minBottom = this.options.topInset + 14;
+    return Math.max(minBottom, headY - BAR_HEIGHT - 6) - slot.y;
+  }
+
   private drawBody(view: UnitView): void {
     const { size } = view.slot;
     const { color, kind } = view.unit;
     const g = view.body;
     g.clear();
-    view.name.visible = view.slot.role === "field";
-    view.name.style.fontSize = view.slot.size > 60 ? 12 : 10;
+    const mode = this.labelMode(view);
+    view.name.visible = mode === "above";
+    view.name.style.fontSize = size > 90 ? 14 : 12;
+    view.name.position.set(0, this.labelBottom(view));
 
     if (view.sprite && view.unit.sheet) {
-      // Feet on the bottom of the slot box; the label sits above the head.
-      const height = spriteDisplayHeight(size, view.unit.sheet.standingHeight, view.unit.sheet.extraScale, this.headroom(view.slot));
-      view.name.position.set(0, size / 2 - height - 4);
       this.applyFrame(view);
       return;
     }
@@ -314,18 +370,17 @@ export class BattleScene {
         const a = (Math.PI / 3) * i - Math.PI / 2;
         points.push(Math.cos(a) * r, Math.sin(a) * r);
       }
-      g.poly(points).fill(color).stroke({ width: 2, color: 0xffffff, alpha: 0.6 });
+      g.poly(points).fill(color).stroke({ width: 2, color: 0x000000 });
     } else if (kind === "enemy") {
-      g.circle(0, 0, size / 2).fill(color).stroke({ width: 2, color: 0xffffff, alpha: 0.5 });
+      g.circle(0, 0, size / 2).fill(color).stroke({ width: 2, color: 0x000000 });
     } else {
       g.roundRect(-size / 2, -size / 2, size, size, size * 0.18)
         .fill(color)
-        .stroke({ width: 2, color: 0xffffff, alpha: 0.6 });
+        .stroke({ width: 2, color: 0x000000 });
     }
     // Facing marker: a small notch toward the enemy side.
     const dir = view.unit.side === "player" ? 1 : -1;
     g.circle((dir * size) / 4, -size / 8, Math.max(2, size / 14)).fill({ color: 0xffffff, alpha: 0.9 });
-    view.name.position.set(0, -size / 2 - 10);
   }
 
   // -------------------------------------------------------------------------
@@ -360,7 +415,7 @@ export class BattleScene {
     const source = sheet.data.frames[frame.f];
     const texture = sheet.textures[frame.f];
     if (!source || !texture) return;
-    const scale = spriteDisplayHeight(view.slot.size, sheet.standingHeight, sheet.extraScale, this.headroom(view.slot)) / sheet.standingHeight;
+    const scale = this.standingHeight(view) / sheet.standingHeight;
     // Players face right, enemies face left, whatever way the source frames face.
     const facing = (view.unit.side === "player" ? 1 : -1) * sheet.facingSign;
     const flip = frame.flipH ? -1 : 1;
@@ -389,14 +444,16 @@ export class BattleScene {
   private drawHp(view: UnitView): void {
     const { size } = view.slot;
     const { theme } = this.options;
-    const width = Math.max(28, size);
-    const ratio = Math.max(0, Math.min(1, view.hp / view.unit.maxHp));
     const g = view.hpBar;
     g.clear();
-    g.roundRect(-width / 2, size / 2 + 4, width, 5, 2).fill(theme.hpTrack);
-    if (ratio > 0) {
-      g.roundRect(-width / 2, size / 2 + 4, width * ratio, 5, 2).fill(ratio < 0.3 ? theme.hpLow : theme.hp);
-    }
+    const mode = this.labelMode(view);
+    if (mode === "none") return;
+    const width = mode === "above" ? Math.max(56, Math.min(96, size)) : Math.max(24, size * 0.9);
+    const y = mode === "above" ? this.labelBottom(view) + 2 : size / 2 + 3;
+    const ratio = Math.max(0, Math.min(1, view.hp / view.unit.maxHp));
+    g.rect(-width / 2 - 1, y - 1, width + 2, BAR_HEIGHT + 2).fill(0x000000);
+    g.rect(-width / 2, y, width, BAR_HEIGHT).fill(theme.hpTrack);
+    if (ratio > 0) g.rect(-width / 2, y, width * ratio, BAR_HEIGHT).fill(ratio < 0.3 ? theme.hpLow : theme.hp);
   }
 
   private setHp(view: UnitView, hp: number): void {
@@ -432,29 +489,39 @@ export class BattleScene {
     });
   }
 
-  private floatText(view: UnitView, text: string, color: number, fontSize: number): void {
-    const label = new Text({
-      text,
-      style: {
-        fontFamily: "system-ui, sans-serif",
-        fontSize,
-        fontWeight: "700",
-        fill: color,
-        stroke: { color: 0x000000, width: 3, alpha: 0.5 },
-      },
-    });
-    label.anchor.set(0.5);
-    const startY = view.slot.y - view.slot.size / 2 - 4;
-    label.position.set(view.slot.x, startY);
-    this.fx.addChild(label);
-    const duration = this.options.reducedMotion ? 500 : 700;
+  /** A number or word rising from the unit's body, below its name label. */
+  private floatText(
+    view: UnitView,
+    text: string,
+    color: number,
+    fontSize: number,
+    extra?: { tag: string; tagColor: number },
+  ): void {
+    const group = new Container();
+    const style = { fontFamily: FONT, fontSize, fill: color, stroke: { color: 0x000000, width: 4 } };
+    const label = new Text({ text, style });
+    label.anchor.set(0.5, 1);
+    group.addChild(label);
+    if (extra?.tag) {
+      const tag = new Text({ text: extra.tag, style: { ...style, fontSize: 13, fill: extra.tagColor } });
+      tag.anchor.set(0.5, 0);
+      tag.y = 1;
+      group.addChild(tag);
+    }
+    // Middle of the standing body; side units in a duel float toward the center a little.
+    const bodyY = view.slot.y + view.slot.size / 2 - this.standingHeight(view) * 0.42;
+    const startY = Math.max(this.options.topInset + 30, bodyY);
+    const nudge = view.unit.side === "player" ? 10 : -10;
+    group.position.set(view.slot.x + nudge, startY);
+    this.fx.addChild(group);
+    const duration = this.options.reducedMotion ? 600 : 800;
     this.tween(
       duration,
       (t) => {
-        if (!this.options.reducedMotion) label.y = startY - 22 * t;
-        label.alpha = t < 0.6 ? 1 : 1 - (t - 0.6) / 0.4;
+        if (!this.options.reducedMotion) group.y = startY - 16 * easeOut(t);
+        group.alpha = t < 0.65 ? 1 : 1 - (t - 0.65) / 0.35;
       },
-      () => label.destroy(),
+      () => group.destroy({ children: true }),
     );
   }
 
