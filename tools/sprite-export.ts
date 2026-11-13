@@ -2,7 +2,8 @@
 // the animation slots (idle, basic, s1..s3, hit, ko) and the portrait into one atlas.
 //
 // Output, per pack id: packs/onepiece/assets/<id>/atlas.png and sprite.json, plus
-// packs/onepiece/assets/index.json listing every exported id. The folder is git-ignored.
+// packs/onepiece/assets/index.json listing every exported id. Atlases and sprite.json of World 1
+// ids are committed; index.json is git-ignored.
 //
 // sprite.json, version 1 (sizes in source pixels; 60 ticks = 1 second):
 //   {

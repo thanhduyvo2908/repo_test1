@@ -5,9 +5,10 @@ coverage/
 *.log
 .DS_Store
 
-# Raw MUGEN sources and generated sprites are never committed (see CLAUDE.md).
+# Raw MUGEN and GBA sources are never committed (see CLAUDE.md). Exported World 1 sprites
+# (packs/onepiece/assets/<id>/atlas.png, sprite.json) are committed; the export index is not.
 assets-raw/
-packs/onepiece/assets/
+packs/onepiece/assets/index.json
 tools/out/
 
 # UI research screenshots: Poke'Catch captures and shots with ripped sprites (docs/ui/research.md).

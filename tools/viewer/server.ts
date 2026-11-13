@@ -1,6 +1,6 @@
 // Dev-server handler for the character viewer (tools/viewer/index.html). It reads MUGEN
 // characters and GBA sheets straight from assets-raw/, packs every animation into atlas pages
-// and caches them under tools/out/viewer/ (git-ignored, like all sprites).
+// and caches them under tools/out/viewer/ (git-ignored).
 //
 // Routes, under /__viewer/:
 //   list.json[?refresh=1]          every source, game sources first

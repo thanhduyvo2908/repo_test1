@@ -1,5 +1,6 @@
-// Where the exported sprite files of a pack live. Assets are not committed, so any of them may be
-// missing. Kept free of PixiJS so plain React screens (portraits) can read frames without it.
+// Where the exported sprite files of a pack live. Only some ids have sprites (the placeholder pack
+// has none), so any of them may be missing. Kept free of PixiJS so plain React screens (portraits)
+// can read frames without it.
 
 const sheetJson = import.meta.glob("/packs/*/assets/*/sprite.json", { import: "default" }) as Record<
   string,
